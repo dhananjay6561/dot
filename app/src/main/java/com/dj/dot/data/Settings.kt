@@ -34,6 +34,7 @@ class Settings(context: Context) {
     val skipFadeMs = int("skip_fade_ms", 1200)
     val fadeOnSkip = bool("fade_skip", true)
     val fadeOnPause = bool("fade_pause", true)
+    val beatAlignedFade = bool("beat_fade", true)
     val speed = float("speed", 1f)
 
     // Sound
@@ -45,6 +46,10 @@ class Settings(context: Context) {
     val virtualizer = int("virtualizer", 0)
     val reverb = int("reverb", 0)
     val soundEffect = string("sound_effect", "Hi-Fi")
+    val levelling = bool("levelling", false)
+    val balance = int("balance", 0)
+    val mono = bool("mono", false)
+    val vibe = int("vibe", 0)
 
     // Library & UI
     val minDurationSec = int("min_duration", 30)
@@ -55,6 +60,7 @@ class Settings(context: Context) {
     val artStyle = int("art_style", 0)
     val glyphMode = int("glyph_mode", 1)
     val shakeForRandom = bool("shake_random", true)
+    val playOnConnect = bool("play_on_connect", true)
     val bedsideWhenCharging = bool("bedside_charging", true)
     val glyphBrightness = int("glyph_brightness", 100)
     val glyphSensitivity = int("glyph_sensitivity", 100)

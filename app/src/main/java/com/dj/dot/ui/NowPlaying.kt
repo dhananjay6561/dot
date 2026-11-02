@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -50,6 +51,7 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.RepeatOne
 import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -127,7 +129,7 @@ fun NowPlayingScreen(onClose: () -> Unit) {
             IconBtn(Icons.Rounded.Fullscreen, { app.party = true }, size = 24.dp)
             Label("Now playing", Modifier.weight(1f), color = Dot.White, align = TextAlign.Center)
             DotIconBtn(DotIcons.Visuals, { visualsSheet = true }, tint = if (glyphMode != 0) Dot.Red else Dot.White)
-            IconBtn(Icons.Rounded.GraphicEq, { app.push(Screen.Equalizer) })
+            IconBtn(Icons.Rounded.Tune, { app.push(Screen.Equalizer) }, description = "Sound and equalizer")
         }
 
         // Phones in landscape get two panes: the art, lyrics or queue on the left, controls on the right.
@@ -155,6 +157,12 @@ fun NowPlayingScreen(onClose: () -> Unit) {
                         "${song.artist}  ·  ${song.album}", color = Dot.Muted, style = MonoSmall,
                         maxLines = 1, overflow = TextOverflow.Ellipsis,
                     )
+                    val format by engine.format.collectAsStateWithLifecycle()
+                    val earphones by dot.headphones.connected.collectAsStateWithLifecycle()
+                    Row(Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        format?.let { Chip(it) }
+                        earphones?.battery?.let { Chip("Earbuds $it%", red = it <= 20) }
+                    }
                 }
                 val fav = song.id in favs
                 // Liking pops the heart; unliking just morphs back.
@@ -454,5 +462,12 @@ private fun SeekSection() {
     Row(Modifier.fillMaxWidth()) {
         Label(formatTime(pos), Modifier.weight(1f))
         Label("-" + formatTime(dur - pos))
+    }
+}
+
+@Composable
+private fun Chip(text: String, red: Boolean = false) {
+    Box(Modifier.border(1.dp, if (red) Dot.Red else Dot.Line, CircleShape).padding(horizontal = 10.dp, vertical = 3.dp)) {
+        Label(text, color = if (red) Dot.Red else Dot.Muted)
     }
 }

@@ -1,5 +1,10 @@
 # Dot
 
+[![Build](https://github.com/dhananjay6561/dot/actions/workflows/build.yml/badge.svg)](https://github.com/dhananjay6561/dot/actions/workflows/build.yml)
+[![Release](https://img.shields.io/github/v/release/dhananjay6561/dot?color=D71921&label=release)](https://github.com/dhananjay6561/dot/releases/latest)
+[![License](https://img.shields.io/github/license/dhananjay6561/dot?color=111111)](LICENSE)
+![Android 10+](https://img.shields.io/badge/Android-10%2B-111111)
+
 An offline music player for Android, designed around the Nothing OS look: pure black, dot-matrix type, a single red accent. Built for the Nothing Phone (4a), and it runs on any phone with Android 10 or newer. On Nothing phones it also drives the Glyph lights on the back.
 
 Dot plays the music that lives on your phone. No accounts, no streaming, no ads, no network calls.
@@ -10,6 +15,10 @@ Dot plays the music that lives on your phone. No accounts, no streaming, no ads,
 | Installed | **3.6 MB** |
 
 For comparison, most streaming music apps install at well over 100 MB.
+
+## Download
+
+Grab **`Dot-1.0.0.apk`** from the [latest release](https://github.com/dhananjay6561/dot/releases/latest), open it on your phone and allow installing from that source. Android 10 or newer.
 
 <p align="center">
   <img src="docs/screenshots/home.webp" width="200" alt="Library">
@@ -34,10 +43,13 @@ For comparison, most streaming music apps install at well over 100 MB.
 - Each hour fills its own ring of dots, with the stop time shown in the middle
 - Quick presets, "end of this song", and a gentle fade out before stopping
 
-**Sound**
+**Sound** (Dot's own audio engine, the same on every phone)
 - One-tap sound modes: Hi-Fi, Bass Boost, Super Bass, Panoramic, Concert, Vocal, Club, Cinema
-- Equalizer with nine presets and per-band dot sliders
-- Bass boost, Panoramic 3D surround, loudness and room reverb (Room, Studio, Hall, Arena, Plate)
+- 10-band equalizer from 31 Hz to 16 kHz (±12 dB) with nine presets and per-band dot sliders
+- A true low-shelf bass boost, mid/side stereo widening (Panoramic) and room reverb (Room, Studio, Hall, Arena, Plate)
+- Automatic headroom and a peak limiter, so boosted settings never clip or crackle
+- Volume levelling, so quiet and loud tracks play at a similar level
+- **Vibes:** Slowed + Reverb, Nightcore, 8D (the song circles your head) and Karaoke (vocal remover)
 - Lossless formats: FLAC, ALAC, WAV, plus Opus, Vorbis, MP3 and AAC
 
 **Visuals**
@@ -172,7 +184,7 @@ flowchart TB
         Tracker["ListeningTracker<br/>listening time · tempo learning"]
         P1["ExoPlayer A"]
         P2["ExoPlayer B"]
-        Fx["AudioFx<br/>EQ · bass · surround<br/>loudness · reverb"]
+        Fx["DotDsp<br/>EQ · bass · width · reverb<br/>levelling · limiter · vibes"]
         Spec["Spectrum<br/>FFT · beats · BPM · waveform"]
         Lyrics["Lyrics<br/>LRC · ID3 · Vorbis"]
     end
@@ -191,8 +203,7 @@ flowchart TB
     Engine --> P1 & P2
     Engine --> Tracker --> Store
     Engine --> Lyrics
-    P1 & P2 -- "shared audio session" --> Fx
-    P1 & P2 -- "PCM tap" --> Spec
+    P1 & P2 -- "PCM" --> Fx -- "processed PCM" --> Spec
     Spec -- "levels · beats" --> NP & Overlays & Glyph
     Spec -- "BPM" --> Tracker
     Service <--> Engine
@@ -297,6 +308,25 @@ flowchart LR
 - **Sync.** Audio is decoded ahead of the speaker by the output buffer. Every frame is timestamped and readers take the one that is audible now, not the one just decoded.
 - **Glyph strip.** The low bands drive a six-LED meter with per-LED brightness, beats flash the whole strip, and frames are only sent over the binder when they visibly change.
 
+## How the sound engine works
+
+Android's built-in effects differ from phone to phone, so Dot processes audio itself, inside each player, before it reaches the speaker:
+
+```mermaid
+flowchart LR
+    In["Decoded PCM"] --> Pre["Preamp<br/>auto headroom"]
+    Pre --> EQ["10-band EQ"] --> Bass["Bass shelf<br/>95 Hz"]
+    Bass --> Stage["Width · 8D · Karaoke"]
+    Stage --> Rev["Reverb"] --> Lev["Levelling"]
+    Lev --> Gain["Loudness"] --> Lim["Limiter<br/>+ soft clip"] --> Out["Speaker"]
+```
+
+- **Headroom first.** The preamp pulls the signal down by most of the biggest boost, so the EQ and bass shelf can't overload. The limiter catches whatever is left, and a soft clip rounds off any final peak instead of crackling.
+- **Filters** are standard RBJ biquads; bands set to 0 dB are skipped entirely.
+- **Panoramic** widens the side signal; **8D** pans the centre slowly around your head; **Karaoke** keeps the sides and only the low end of the centre, where most vocals sit.
+- **Slowed + Reverb** and **Nightcore** change speed and pitch together, like a record at the wrong speed, with a big room added for Slowed.
+- Both crossfading players run their own copy of the chain from shared settings, so effects carry straight through a blend.
+
 ## Performance
 
 Dot is built to stay light on battery and memory:
@@ -326,7 +356,7 @@ Dot is built to stay light on battery and memory:
 | Language | Kotlin |
 | UI | Jetpack Compose, Material 3 (restyled) |
 | Playback | AndroidX Media3 ExoPlayer and MediaSession |
-| Audio effects | `android.media.audiofx` Equalizer, BassBoost, Virtualizer, LoudnessEnhancer, PresetReverb |
+| Audio processing | Dot's own DSP chain inside ExoPlayer: RBJ biquad EQ and shelf, mid/side width, Freeverb-style reverb, RMS levelling, peak limiter |
 | Glyph | Nothing Glyph Developer Kit |
 | Library | MediaStore with a content observer and a cached index |
 | Storage | SharedPreferences and JSON files, no database |
@@ -348,7 +378,8 @@ app/src/main/java/com/dj/dot
 │   ├── DotEngine.kt       dual-player engine, crossfade, focus, queue
 │   ├── ListeningTracker.kt listening time and tempo learning
 │   ├── DotService.kt      media session service and notification art
-│   ├── AudioFx.kt         equalizer, sound modes, surround, reverb
+│   ├── DotDsp.kt          the audio chain: EQ, bass, width, 8D, karaoke, reverb, levelling, limiter
+│   ├── AudioFx.kt         maps sound settings, presets and modes onto the chain
 │   ├── Spectrum.kt        FFT, bands, beats, BPM, waveform
 │   ├── GlyphLights.kt     rear light strip modes
 │   └── Lyrics.kt          LRC, ID3 USLT and Vorbis lyrics, lrc matching
@@ -414,7 +445,6 @@ Or copy the APK to the phone and open it, allowing installs from that source whe
 | `POST_NOTIFICATIONS` | Playback notification |
 | `FOREGROUND_SERVICE_MEDIA_PLAYBACK` | Keep playing in the background |
 | `WAKE_LOCK` | Don't stall with the screen off |
-| `MODIFY_AUDIO_SETTINGS` | Room reverb on the output mix |
 | `com.nothing.ketchum.permission.ENABLE` | Drive the Glyph lights on Nothing phones |
 | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Optional, asked from Settings |
 | `MANAGE_EXTERNAL_STORAGE` | Optional, only for `.lrc` files |
@@ -423,11 +453,14 @@ Dot has no internet permission.
 
 ## Roadmap
 
-- Dot's own audio engine: 10-band EQ, bass shelf, stereo widening, limiter and volume levelling
 - Beat-matched crossfade
 - Home-screen widget and Quick Settings tile
 - Format badge (codec, bit depth, sample rate)
 - Backup and restore of playlists and stats
+
+## Contributing
+
+Bug reports, ideas and pull requests are welcome. Read the [contributing guide](CONTRIBUTING.md) first; this project follows the [Contributor Covenant](CODE_OF_CONDUCT.md). Security problems go through the [security policy](SECURITY.md), not public issues.
 
 ## Credits
 
@@ -435,3 +468,7 @@ Dot has no internet permission.
 - [AndroidX Media3](https://github.com/androidx/media)
 - [Nothing Glyph Developer Kit](https://github.com/Nothing-Developer-Programme/Glyph-Developer-Kit)
 - Library and queue ideas inspired by open-source players such as Auxio
+
+## License
+
+Dot is licensed under the [Apache License 2.0](LICENSE). Bundled fonts are under the SIL Open Font License; see [NOTICE](NOTICE) for third-party attributions.

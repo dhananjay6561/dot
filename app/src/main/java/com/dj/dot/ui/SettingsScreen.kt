@@ -48,6 +48,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dj.dot.DotApp
 import com.dj.dot.playback.AudioFx
 import com.dj.dot.playback.GlyphMode
+import com.dj.dot.playback.Vibe
 import kotlin.math.roundToInt
 
 @Composable
@@ -61,6 +62,7 @@ fun SettingsScreen() {
     val skipFade by s.skipFadeMs.flow.collectAsStateWithLifecycle()
     val fadeSkip by s.fadeOnSkip.flow.collectAsStateWithLifecycle()
     val fadePause by s.fadeOnPause.flow.collectAsStateWithLifecycle()
+    val beatFade by s.beatAlignedFade.flow.collectAsStateWithLifecycle()
     val speed by s.speed.flow.collectAsStateWithLifecycle()
     val minDur by s.minDurationSec.flow.collectAsStateWithLifecycle()
     val hideWhatsApp by s.hideWhatsApp.flow.collectAsStateWithLifecycle()
@@ -71,6 +73,7 @@ fun SettingsScreen() {
     val stripStyle by s.stripStyle.flow.collectAsStateWithLifecycle()
     val glyphMode by s.glyphMode.flow.collectAsStateWithLifecycle()
     val shake by s.shakeForRandom.flow.collectAsStateWithLifecycle()
+    val playOnConnect by s.playOnConnect.flow.collectAsStateWithLifecycle()
     val bedside by s.bedsideWhenCharging.flow.collectAsStateWithLifecycle()
     val scanning by dot.library.scanning.collectAsStateWithLifecycle()
     val lib by dot.library.data.collectAsStateWithLifecycle()
@@ -95,12 +98,14 @@ fun SettingsScreen() {
                 steps = 24,
             ) { s.crossfadeMs.set(((it * 24).roundToInt() * 500)) }
         }
+        if (crossfade > 0) item { SwitchRow("Start blends on the beat", "Waits for the next beat before crossfading", beatFade) { s.beatAlignedFade.set(it) } }
         item { SwitchRow("Fade when skipping", "Quick blend when you tap next, previous or a song", fadeSkip) { s.fadeOnSkip.set(it) } }
         if (fadeSkip) item {
             SliderRow("Skip fade", "%.1f S".format(skipFade / 1000f), null, skipFade / 4000f, steps = 16) {
                 s.skipFadeMs.set(((it * 16).roundToInt() * 250).coerceAtLeast(250))
             }
         }
+        item { SwitchRow("Play when headphones connect", "Bluetooth, wired or USB; resumes your queue", playOnConnect) { s.playOnConnect.set(it) } }
         item { SwitchRow("Fade on play / pause", "Soft fade in and out instead of a hard cut", fadePause) { s.fadeOnPause.set(it) } }
 
         item { Section("Sound") }
@@ -211,6 +216,10 @@ fun EqualizerScreen() {
     val loud by s.loudness.flow.collectAsStateWithLifecycle()
     val surround by s.virtualizer.flow.collectAsStateWithLifecycle()
     val reverb by s.reverb.flow.collectAsStateWithLifecycle()
+    val levelling by s.levelling.flow.collectAsStateWithLifecycle()
+    val balance by s.balance.flow.collectAsStateWithLifecycle()
+    val mono by s.mono.flow.collectAsStateWithLifecycle()
+    val vibe by s.vibe.flow.collectAsStateWithLifecycle()
     val levels = remember(raw) { dot.engine.parseLevels(raw) }
     val span = maxOf(-fx.range.first, fx.range.last).toFloat()
 
@@ -240,7 +249,6 @@ fun EqualizerScreen() {
             }
         }
         item { DotTitle("Sound", Modifier.padding(horizontal = 20.dp, vertical = 8.dp), size = 34.sp) }
-        if (!fx.available) item { Label("Audio effects aren't available on this device", Modifier.padding(20.dp), color = Dot.Red) }
 
         item { Section("Effects") }
         item {
@@ -254,6 +262,53 @@ fun EqualizerScreen() {
                         if (pair.size == 1) Spacer(Modifier.weight(1f))
                     }
                 }
+            }
+        }
+
+        item { HeadphonesCard() }
+
+        item { Section("Balance") }
+        item {
+            Column(Modifier.padding(horizontal = 20.dp, vertical = 6.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Left / right", color = Dot.White, fontSize = 15.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+                    Label(balanceLabel(balance), color = Dot.White, modifier = Modifier.clickable { s.balance.set(0) })
+                }
+                Text("Tap the value to centre", color = Dot.Muted, style = MonoSmall)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Label("L", color = Dot.White)
+                    DotSlider(
+                        (balance + 100) / 200f, { s.balance.set(((it * 40).roundToInt() * 5) - 100) },
+                        Modifier.weight(1f).padding(horizontal = 8.dp), live = true, steps = 40,
+                        bubble = { balanceLabel(((it * 40).roundToInt() * 5) - 100) },
+                    )
+                    Label("R", color = Dot.White)
+                }
+            }
+        }
+        item { SwitchRow("Mono", "Both ears get the full song; good with one earbud", mono) { s.mono.set(it) } }
+
+        item { Section("Vibes") }
+        item {
+            Column(Modifier.padding(horizontal = 20.dp)) {
+                Text("Change the whole feel of a track. Works with any sound mode.", color = Dot.Muted, style = MonoSmall)
+                Spacer(Modifier.height(10.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(Vibe.entries.size) { i ->
+                        Pill(Vibe.entries[i].label, { s.vibe.set(i) }, selected = vibe == i, accent = vibe == i && i != 0)
+                    }
+                }
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    when (Vibe.entries[vibe]) {
+                        Vibe.Off -> " "
+                        Vibe.Slowed -> "Slower, deeper, in a big room"
+                        Vibe.Nightcore -> "Faster and higher, full energy"
+                        Vibe.EightD -> "The song circles your head. Use earphones"
+                        Vibe.Karaoke -> "Removes most centred vocals. Sing along"
+                    },
+                    color = Dot.White, style = MonoSmall,
+                )
             }
         }
 
@@ -307,19 +362,22 @@ fun EqualizerScreen() {
         item {
             SliderRow(
                 "Panoramic", "${surround / 10}%",
-                if (fx.surroundAvailable) "3D surround, best on earphones" else "Not supported on this device",
+                "3D surround, best on earphones",
                 surround / 1000f,
             ) { tweak { s.virtualizer.set((it * 1000).roundToInt()) } }
         }
         item {
-            SliderRow("Loudness", "+%.1f DB".format(loud / 100f), "Lifts quiet tracks", loud / 1000f) {
+            SwitchRow("Volume levelling", "Quiet and loud tracks play at a similar level", levelling) { s.levelling.set(it) }
+        }
+        item {
+            SliderRow("Loudness", "+%.1f DB".format(loud / 100f), "Lifts quiet tracks; the limiter stops clipping", loud / 1000f) {
                 tweak { s.loudness.set((it * 1000).roundToInt()) }
             }
         }
         item {
             Column(Modifier.padding(horizontal = 20.dp, vertical = 10.dp)) {
                 Text("Reverb", color = Dot.White, fontSize = 15.sp, fontWeight = FontWeight.Medium)
-                Text(if (fx.reverbAvailable) "Room ambience around the music" else "Not supported on this device", color = Dot.Muted, style = MonoSmall)
+                Text("Room ambience around the music", color = Dot.Muted, style = MonoSmall)
                 Spacer(Modifier.height(10.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(AudioFx.reverbs.size) { i ->
@@ -352,6 +410,73 @@ private fun EffectCard(name: String, note: String, selected: Boolean, modifier: 
         Spacer(Modifier.height(4.dp))
         Text(note, color = if (selected) Dot.Black.copy(alpha = 0.6f) else Dot.Muted, style = MonoSmall, maxLines = 1)
     }
+}
+
+/** Connected earphones with their reported battery, or a button to allow reading it. */
+@Composable
+private fun HeadphonesCard() {
+    val dot = DotApp.instance
+    val hp = dot.headphones
+    val info by hp.connected.collectAsStateWithLifecycle()
+    var allowed by remember { mutableStateOf(hp.hasPermission()) }
+    val ask = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        allowed = granted
+        if (granted) hp.start()
+    }
+    Section("Earphones")
+    Column(
+        Modifier.padding(horizontal = 20.dp).fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Dot.Surface2).padding(16.dp),
+    ) {
+        val current = info
+        when {
+            !allowed -> {
+                Text("See your earphones' battery", color = Dot.White, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+                Text("Needs the Nearby devices permission", color = Dot.Muted, style = MonoSmall)
+                Spacer(Modifier.height(10.dp))
+                Pill("Allow", { if (android.os.Build.VERSION.SDK_INT >= 31) ask.launch(android.Manifest.permission.BLUETOOTH_CONNECT) }, accent = true)
+            }
+            current == null -> {
+                Text("No Bluetooth earphones connected", color = Dot.White, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+                Text("Connect them and their battery shows here", color = Dot.Muted, style = MonoSmall)
+            }
+            else -> {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        DotTitle(current.name, size = 20.sp)
+                        Text(
+                            if (current.battery != null) "Battery reported by the earphones" else "These earphones don't report battery to Android",
+                            color = Dot.Muted, style = MonoSmall,
+                        )
+                    }
+                    current.battery?.let { DotTitle("$it%", size = 26.sp, color = if (it <= 20) Dot.Red else Dot.White) }
+                }
+                current.battery?.let { level ->
+                    Spacer(Modifier.height(10.dp))
+                    androidx.compose.foundation.Canvas(Modifier.fillMaxWidth().height(10.dp)) {
+                        val n = 20
+                        val step = size.width / n
+                        for (i in 0 until n) {
+                            val lit = i < (level * n + 50) / 100
+                            drawCircle(
+                                if (!lit) Dot.Faint else if (level <= 20) Dot.Red else Dot.White,
+                                3.dp.toPx(), androidx.compose.ui.geometry.Offset(step * i + step / 2, size.height / 2),
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                Text("Separate left, right and case levels are only available to system apps.", color = Dot.Muted, style = MonoSmall)
+            }
+        }
+    }
+}
+
+private fun balanceLabel(b: Int) = when {
+    b == 0 -> "Centre"
+    b < 0 -> "L ${-b}%"
+    else -> "R $b%"
 }
 
 private fun formatHz(hz: Int) = if (hz >= 1000) "%.1fK".format(hz / 1000f).replace(".0K", "K") else "$hz"

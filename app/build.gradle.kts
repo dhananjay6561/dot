@@ -129,5 +129,5 @@ dependencies {
 
     testImplementation("junit:junit:4.13.2")
     // The org.json in android.jar is a stub on the JVM; tests need the real one.
-    testImplementation("org.json:json:20250517")
+    testImplementation("org.json:json:20260814")
 }

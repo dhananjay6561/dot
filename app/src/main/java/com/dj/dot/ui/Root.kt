@@ -13,9 +13,12 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
@@ -184,7 +187,11 @@ private fun MainUi() {
                         Box(Modifier.weight(1f)) {
                             AnimatedContent(
                                 targetState = app.stack.last(),
-                                transitionSpec = { fadeIn(tween(180)) togetherWith fadeOut(tween(120)) },
+                                // New screens settle in on a soft spring instead of a flat cross-fade.
+                                transitionSpec = {
+                                    (fadeIn(tween(200)) + scaleIn(spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow), initialScale = 0.96f)) togetherWith
+                                        fadeOut(tween(120))
+                                },
                                 label = "screens",
                             ) { screen ->
                                 holder.SaveableStateProvider(screen.key) { ScreenContent(screen) }

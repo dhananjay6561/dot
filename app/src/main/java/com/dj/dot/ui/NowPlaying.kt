@@ -73,6 +73,11 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PointMode
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -103,11 +108,21 @@ fun NowPlayingScreen(onClose: () -> Unit) {
     var visualsSheet by remember { mutableStateOf(false) }
     val glyphMode by dot.settings.glyphMode.flow.collectAsStateWithLifecycle()
     var pullDown by remember { mutableFloatStateOf(0f) }
+    val artStyleIndex by dot.settings.artStyle.flow.collectAsStateWithLifecycle()
+    val artStyle = ArtStyle.entries[artStyleIndex.coerceIn(0, ArtStyle.entries.lastIndex)]
+    // One analyser for the whole screen, so the cover, the strip and the controls share a beat.
+    // It only runs while the art is showing, as before, so lyrics and the queue don't keep the FFT busy.
+    val needsAnalysis = showViz || artStyle == ArtStyle.DotArt || artStyle == ArtStyle.Halo
+    val viz = if (panel == Panel.Art && needsAnalysis) rememberVizState(engine.spectrum, state.playing) else null
+    val tint = rememberArtTint(song)
+    val glow by androidx.compose.animation.animateColorAsState(tint ?: Color.Transparent, tween(700), label = "glow")
+    val wide = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     Column(
         Modifier
             .fillMaxSize()
             .background(Dot.Black)
+            .dotGlow(if (wide) Offset(0.25f, 0.5f) else Offset(0.5f, 0.3f)) { glow }
             .pointerInput(Unit) {
                 detectVerticalDragGestures(
                     // Down closes the player, up opens the queue.
@@ -138,7 +153,7 @@ fun NowPlayingScreen(onClose: () -> Unit) {
             Box(modifier, contentAlignment = Alignment.Center) {
                 AnimatedContent(panel, transitionSpec = { fadeIn(tween(200)) togetherWith fadeOut(tween(150)) }, label = "panel") { p ->
                     when (p) {
-                        Panel.Art -> ArtPanel(song, state.playing, showViz)
+                        Panel.Art -> ArtPanel(song, state.playing, showViz, viz)
                         Panel.Lyrics -> LyricsView()
                         Panel.Queue -> QueuePanel()
                     }
@@ -159,6 +174,7 @@ fun NowPlayingScreen(onClose: () -> Unit) {
                     earphones?.battery?.let { Box(Modifier.padding(top = 6.dp)) { Chip("Earbuds $it%", red = it <= 20) } }
                 }
                 val fav = song.id in favs
+                val likeHaptic = androidx.compose.ui.platform.LocalHapticFeedback.current
                 // Liking pops the heart; unliking just morphs back.
                 val pop = remember { androidx.compose.animation.core.Animatable(1f) }
                 var lastFav by remember(song.id) { mutableStateOf(fav) }
@@ -171,7 +187,10 @@ fun NowPlayingScreen(onClose: () -> Unit) {
                 }
                 IconBtn(
                     if (fav) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                    { dot.store.toggleFavourite(song.id) },
+                    {
+                        likeHaptic.performHapticFeedback(if (fav) androidx.compose.ui.hapticfeedback.HapticFeedbackType.ToggleOff else androidx.compose.ui.hapticfeedback.HapticFeedbackType.ToggleOn)
+                        dot.store.toggleFavourite(song.id)
+                    },
                     Modifier.graphicsLayer { scaleX = pop.value; scaleY = pop.value },
                     tint = if (fav) Dot.Red else Dot.White,
                 )
@@ -185,13 +204,19 @@ fun NowPlayingScreen(onClose: () -> Unit) {
                 ToggleIcon(Icons.Rounded.Shuffle, state.shuffle, engine::toggleShuffle)
                 IconBtn(Icons.Rounded.SkipPrevious, engine::previous, size = 34.dp)
                 val playInteraction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
                 Box(
                     Modifier
                         .size(78.dp)
+                        // Breathes a little on each beat; read in the layer so only this layer redraws.
+                        .graphicsLayer { val beat = 1f + 0.06f * (viz?.pulse ?: 0f); scaleX = beat; scaleY = beat }
                         .pressable(playInteraction, 0.9f)
                         .clip(CircleShape)
                         .background(Dot.White)
-                        .clickable(playInteraction, androidx.compose.material3.ripple(color = Dot.Black), onClick = engine::toggle),
+                        .clickable(playInteraction, androidx.compose.material3.ripple(color = Dot.Black)) {
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.ContextClick)
+                            engine.toggle()
+                        },
                     contentAlignment = Alignment.Center,
                 ) {
                     AnimatedIcon(if (state.playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, Dot.Black, 38.dp)
@@ -230,14 +255,14 @@ fun NowPlayingScreen(onClose: () -> Unit) {
 }
 
 @Composable
-private fun ArtPanel(song: com.dj.dot.data.Song, playing: Boolean, showViz: Boolean) {
+private fun ArtPanel(song: com.dj.dot.data.Song, playing: Boolean, showViz: Boolean, viz: VizState?) {
     val dot = DotApp.instance
+    val glyphMode by dot.settings.glyphMode.flow.collectAsStateWithLifecycle()
     val engine = dot.engine
     val artStyleIndex by dot.settings.artStyle.flow.collectAsStateWithLifecycle()
     val stripStyleIndex by dot.settings.stripStyle.flow.collectAsStateWithLifecycle()
     val artStyle = ArtStyle.entries[artStyleIndex.coerceIn(0, ArtStyle.entries.lastIndex)]
     val stripStyle = StripStyle.entries[stripStyleIndex.coerceIn(0, StripStyle.entries.lastIndex)]
-    val needsAnalysis = showViz || artStyle == ArtStyle.DotArt || artStyle == ArtStyle.Halo
     var dragX by remember { mutableFloatStateOf(0f) }
     var flash by remember { mutableStateOf<String?>(null) }
     var hearts by remember { androidx.compose.runtime.mutableIntStateOf(0) }
@@ -247,11 +272,11 @@ private fun ArtPanel(song: com.dj.dot.data.Song, playing: Boolean, showViz: Bool
     LaunchedEffect(flash) { if (flash != null) { delay(1100); flash = null } }
 
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        val viz = if (needsAnalysis) rememberVizState(engine.spectrum, playing) else null
         Box(
             Modifier
                 .weight(1f, fill = false)
                 .aspectRatio(1f)
+                .sharedNowPlayingArt()
                 // On the record, sideways drags scratch instead of skipping.
                 .pointerInput(artStyle) {
                     if (artStyle == ArtStyle.Vinyl) return@pointerInput
@@ -309,7 +334,52 @@ private fun ArtPanel(song: com.dj.dot.data.Song, playing: Boolean, showViz: Bool
                     },
             )
         }
+        // On Nothing phones, a slim live copy of the rear lights while they're on.
+        if (dot.glyph.supported && glyphMode != 0) {
+            Spacer(Modifier.height(10.dp))
+            StripMirror(Modifier.width(132.dp).height(14.dp), horizontal = true)
+        }
     }
+}
+
+/**
+ * A halftone glow in the cover's colour behind the art, its dots shrinking and fading ring by ring.
+ * Dot positions are worked out once per size; a colour change only redraws.
+ */
+private fun Modifier.dotGlow(centre: Offset, color: () -> Color): Modifier = drawWithCache {
+    val step = 14.dp.toPx()
+    val origin = Offset(size.width * centre.x, size.height * centre.y)
+    // Reaches well past the cover, since the cover hides the brightest rings.
+    val reach = size.minDimension * 1.25f
+    val rings = 6
+    val buckets = List(rings) { ArrayList<Offset>() }
+    var y = step / 2
+    while (y < size.height) {
+        var x = step / 2
+        while (x < size.width) {
+            val d = (Offset(x, y) - origin).getDistance() / reach
+            if (d < 1f) buckets[(d * rings).toInt()].add(Offset(x, y))
+            x += step
+        }
+        y += step
+    }
+    onDrawBehind {
+        val c = color()
+        if (c.alpha == 0f) return@onDrawBehind
+        buckets.forEachIndexed { i, points ->
+            val near = 1f - i / rings.toFloat()
+            drawPoints(points, PointMode.Points, c.copy(alpha = c.alpha * 0.35f * near), strokeWidth = step * (0.2f + 0.26f * near), cap = StrokeCap.Round)
+        }
+    }
+}
+
+/** The cover grows out of the mini player art when Now Playing opens, and shrinks back into it. */
+@OptIn(androidx.compose.animation.ExperimentalSharedTransitionApi::class)
+@Composable
+private fun Modifier.sharedNowPlayingArt(): Modifier {
+    val shared = LocalSharedTransition.current ?: return this
+    val visibility = LocalNowPlayingVisibility.current ?: return this
+    return with(shared) { this@sharedNowPlayingArt.sharedElement(rememberSharedContentState(NOW_PLAYING_ART), visibility) }
 }
 
 @Composable
@@ -317,8 +387,9 @@ private fun QueuePanel() {
     val engine = DotApp.instance.engine
     val state by engine.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = (state.index - 1).coerceAtLeast(0))
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
     Column(Modifier.fillMaxSize()) {
-        Label("Up next · ${state.queue.size - state.index - 1} songs", Modifier.padding(vertical = 8.dp))
+        Label("Up next · ${countOf(state.queue.size - state.index - 1, "song")}", Modifier.padding(vertical = 8.dp))
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
             itemsIndexed(state.queue, key = { i, s -> "$i-${s.id}" }) { i, s ->
                 val current = i == state.index
@@ -333,7 +404,7 @@ private fun QueuePanel() {
                         Text(s.artist, color = Dot.Muted, style = SansSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     if (!current) {
-                        IconBtn(Icons.Rounded.KeyboardArrowUp, { engine.moveInQueue(i, i - 1) }, tint = Dot.Muted, size = 20.dp)
+                        IconBtn(Icons.Rounded.KeyboardArrowUp, { haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.SegmentTick); engine.moveInQueue(i, i - 1) }, tint = Dot.Muted, size = 20.dp)
                         IconBtn(Icons.Rounded.Close, { engine.removeFromQueue(i) }, tint = Dot.Muted, size = 18.dp)
                     }
                 }

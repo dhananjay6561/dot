@@ -9,9 +9,16 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
@@ -99,6 +106,12 @@ class AppState {
 
 val LocalAppState = staticCompositionLocalOf<AppState> { error("AppState not provided") }
 
+/** Scopes that let the mini player art grow into the Now Playing cover. */
+@OptIn(ExperimentalSharedTransitionApi::class)
+val LocalSharedTransition = staticCompositionLocalOf<SharedTransitionScope?> { null }
+val LocalNowPlayingVisibility = staticCompositionLocalOf<AnimatedVisibilityScope?> { null }
+const val NOW_PLAYING_ART = "now-playing-art"
+
 private fun audioPermission() =
     if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_AUDIO else Manifest.permission.READ_EXTERNAL_STORAGE
 
@@ -145,6 +158,7 @@ private fun PermissionScreen(onAllow: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun MainUi() {
     val app = remember { AppState() }
@@ -153,49 +167,60 @@ private fun MainUi() {
     val holder = rememberSaveableStateHolder()
 
     CompositionLocalProvider(LocalAppState provides app) {
-        Box(
-            Modifier
-                .fillMaxSize()
-                .background(Dot.Black)
-                .pointerInput(Unit) {
-                    // Watches touches without consuming them, so bedside mode knows when the phone is idle.
-                    awaitPointerEventScope {
-                        while (true) {
-                            awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Initial)
-                            app.lastTouch = android.os.SystemClock.uptimeMillis()
+        SharedTransitionLayout {
+            CompositionLocalProvider(LocalSharedTransition provides this) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(Dot.Black)
+                        .pointerInput(Unit) {
+                            // Watches touches without consuming them, so bedside mode knows when the phone is idle.
+                            awaitPointerEventScope {
+                                while (true) {
+                                    awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Initial)
+                                    app.lastTouch = android.os.SystemClock.uptimeMillis()
+                                }
+                            }
+                        },
+                ) {
+                    Column(Modifier.fillMaxSize()) {
+                        Box(Modifier.weight(1f)) {
+                            AnimatedContent(
+                                targetState = app.stack.last(),
+                                // New screens settle in on a soft spring instead of a flat cross-fade.
+                                transitionSpec = {
+                                    (fadeIn(tween(200)) + scaleIn(spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow), initialScale = 0.96f)) togetherWith
+                                        fadeOut(tween(120))
+                                },
+                                label = "screens",
+                            ) { screen ->
+                                holder.SaveableStateProvider(screen.key) { ScreenContent(screen) }
+                            }
+                        }
+                        state.current?.let { song ->
+                            MiniPlayer(song, state.playing, onOpen = { app.nowPlaying = true })
+                        }
+                        Spacer(Modifier.navigationBarsPadding())
+                    }
+
+                    AnimatedVisibility(
+                        visible = app.nowPlaying && state.current != null,
+                        // A short lift and fade, so the cover growing out of the mini player leads the motion.
+                        enter = fadeIn(tween(220)) + slideInVertically(tween(320)) { it / 10 },
+                        exit = fadeOut(tween(200)) + slideOutVertically(tween(260)) { it / 10 },
+                    ) {
+                        CompositionLocalProvider(LocalNowPlayingVisibility provides this) {
+                            NowPlayingScreen(onClose = { app.nowPlaying = false })
                         }
                     }
-                },
-        ) {
-            Column(Modifier.fillMaxSize()) {
-                Box(Modifier.weight(1f)) {
-                    AnimatedContent(
-                        targetState = app.stack.last(),
-                        transitionSpec = { fadeIn(tween(180)) togetherWith fadeOut(tween(120)) },
-                        label = "screens",
-                    ) { screen ->
-                        holder.SaveableStateProvider(screen.key) { ScreenContent(screen) }
-                    }
+
+                    if (app.party && state.current != null) PartyMode(onExit = { app.party = false })
+                    if (app.bedside) BedsideMode(onExit = { app.bedside = false })
+
+                    app.menu?.let { SongMenuSheet(it, onDismiss = { app.menu = null }) }
+                    app.addToPlaylist?.let { AddToPlaylistSheet(it, onDismiss = { app.addToPlaylist = null }) }
                 }
-                state.current?.let { song ->
-                    MiniPlayer(song, state.playing, onOpen = { app.nowPlaying = true })
-                }
-                Spacer(Modifier.navigationBarsPadding())
             }
-
-            AnimatedVisibility(
-                visible = app.nowPlaying && state.current != null,
-                enter = slideInVertically(tween(320)) { it },
-                exit = slideOutVertically(tween(260)) { it },
-            ) {
-                NowPlayingScreen(onClose = { app.nowPlaying = false })
-            }
-
-            if (app.party && state.current != null) PartyMode(onExit = { app.party = false })
-            if (app.bedside) BedsideMode(onExit = { app.bedside = false })
-
-            app.menu?.let { SongMenuSheet(it, onDismiss = { app.menu = null }) }
-            app.addToPlaylist?.let { AddToPlaylistSheet(it, onDismiss = { app.addToPlaylist = null }) }
         }
 
         ShakeToShuffle()
@@ -235,9 +260,16 @@ fun rememberProgress(intervalMs: Long = 250): Pair<Long, Long> {
     return value
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun MiniPlayer(song: Song, playing: Boolean, onOpen: () -> Unit) {
     val engine = DotApp.instance.engine
+    val app = LocalAppState.current
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+    val shared = LocalSharedTransition.current
+    val artModifier = if (shared == null) Modifier else with(shared) {
+        Modifier.sharedElementWithCallerManagedVisibility(rememberSharedContentState(NOW_PLAYING_ART), visible = !app.nowPlaying)
+    }
     Column(
         Modifier
             .padding(horizontal = 10.dp, vertical = 6.dp)
@@ -246,13 +278,13 @@ private fun MiniPlayer(song: Song, playing: Boolean, onOpen: () -> Unit) {
             .clickable(onClick = onOpen),
     ) {
         Row(Modifier.padding(start = 10.dp, end = 4.dp, top = 8.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-            Art(song, Modifier.size(44.dp), px = 144, shape = RoundedCornerShape(10.dp))
+            Art(song, artModifier.size(44.dp), px = 144, shape = RoundedCornerShape(10.dp))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(song.title, color = Dot.White, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(song.artist, color = Dot.Muted, style = SansSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
-            IconBtn(if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, engine::toggle, size = 28.dp)
+            IconBtn(if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, { haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.ContextClick); engine.toggle() }, size = 28.dp)
             IconBtn(Icons.Rounded.SkipNext, engine::next)
         }
         MiniProgress()

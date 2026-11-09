@@ -2,6 +2,23 @@ package com.dj.dot.ui
 
 import android.content.Intent
 import android.graphics.Bitmap
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -34,10 +51,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -130,32 +149,41 @@ fun WrappedScreen() {
         context.startActivity(Intent.createChooser(send, "Share your Dot Wrapped"))
     }
 
+    var showList by rememberSaveable { mutableStateOf(false) }
+    if (showList || stats.totalMinutes < 1) WrappedList(stats, shareLayer, onShare = { share() }, onBack = app::pop)
+    else WrappedStories(stats, shareLayer, onShare = { share() }, onAll = { showList = true }, onClose = app::pop)
+}
+
+/** Every stat on one scrolling page, with the shareable summary card on top. */
+@Composable
+private fun WrappedList(stats: WrappedStats, shareLayer: GraphicsLayer, onShare: () -> Unit, onBack: () -> Unit) {
     LazyColumn(Modifier.fillMaxSize().statusBarsPadding(), contentPadding = PaddingValues(bottom = 32.dp)) {
         item {
-            TopBar("Wrapped", app::pop) {
-                if (stats.totalMinutes > 0) IconBtn(Icons.Rounded.Share, ::share, size = 22.dp)
+            TopBar("Wrapped", onBack) {
+                if (stats.totalMinutes > 0) IconBtn(Icons.Rounded.Share, onShare, size = 22.dp)
             }
         }
         if (stats.totalMinutes < 1) {
             item { EmptyState("Warming up", "Play some music. Your stats build up as you listen.") }
             return@LazyColumn
         }
-        item {
-            // This card is what gets shared, so it is drawn into a layer we can snapshot.
-            Box(
-                Modifier
-                    .padding(horizontal = 20.dp, vertical = 8.dp)
-                    .drawWithContent {
-                        shareLayer.record { this@drawWithContent.drawContent() }
-                        drawLayer(shareLayer)
-                    },
-            ) { SummaryCard(stats) }
-        }
+        item { ShareableSummary(stats, shareLayer, Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) }
         item { SectionCard("Top artists") { stats.topArtists.forEachIndexed { i, (name, song, ms) -> RankRow(i + 1, name, "${ms / 60_000} min", song, round = true) } } }
         item { SectionCard("Top songs") { stats.topSongs.forEachIndexed { i, (song, ms) -> RankRow(i + 1, song.title, "${song.artist} · ${ms / 60_000} min", song) } } }
         item { SectionCard("Your listening clock") { ClockChart(stats.hours) } }
         item { SectionCard("Last 7 days") { WeekChart(stats.week) } }
     }
+}
+
+/** The summary card, drawn into a layer so it can be snapshotted and shared as an image. */
+@Composable
+private fun ShareableSummary(stats: WrappedStats, shareLayer: GraphicsLayer, modifier: Modifier = Modifier) {
+    Box(
+        modifier.drawWithContent {
+            shareLayer.record { this@drawWithContent.drawContent() }
+            drawLayer(shareLayer)
+        },
+    ) { SummaryCard(stats) }
 }
 
 @Composable
@@ -189,7 +217,7 @@ private fun SummaryCard(stats: WrappedStats) {
         Spacer(Modifier.height(16.dp))
         Row {
             StatBlock("Songs played", stats.songsHeard.toString(), Modifier.weight(1f))
-            StatBlock("Day streak", if (stats.streak > 0) "${stats.streak} days" else "—", Modifier.weight(1f))
+            StatBlock("Day streak", if (stats.streak > 0) countOf(stats.streak, "day") else "—", Modifier.weight(1f))
         }
         Spacer(Modifier.height(22.dp))
         Row(
@@ -290,6 +318,146 @@ private fun WeekChart(week: List<Pair<String, Long>>) {
                 }
                 Spacer(Modifier.height(6.dp))
                 Label(day, color = if (i == week.lastIndex) Dot.Red else Dot.Muted)
+            }
+        }
+    }
+}
+
+private enum class Story { Minutes, Artist, Song, Clock, Type, Summary }
+
+/** One full-screen Wrapped highlight. The last one is the shareable card with a way into every stat. */
+@Composable
+private fun StoryCard(story: Story, stats: WrappedStats, shareLayer: GraphicsLayer, onShare: () -> Unit, onAll: () -> Unit) {
+    Column(
+        Modifier.fillMaxSize().padding(horizontal = 28.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        when (story) {
+            Story.Minutes -> {
+                val since = SimpleDateFormat("d MMM", Locale.getDefault()).format(Date(stats.since))
+                Label("Since $since you've played", color = Dot.White)
+                Spacer(Modifier.height(16.dp))
+                CountUp(stats.totalMinutes)
+                Label("minutes of music, all of it offline", align = TextAlign.Center)
+            }
+            Story.Artist -> stats.topArtists.firstOrNull()?.let { (name, song, ms) ->
+                Label("Your top artist", color = Dot.White)
+                Spacer(Modifier.height(24.dp))
+                Art(song, Modifier.size(220.dp), px = 660, shape = CircleShape)
+                Spacer(Modifier.height(24.dp))
+                DotTitle(name, size = 34.sp, align = TextAlign.Center, maxLines = 2)
+                Label("${ms / 60_000} min together", align = TextAlign.Center)
+            }
+            Story.Song -> stats.topSongs.firstOrNull()?.let { (song, ms) ->
+                Label("Your song on repeat", color = Dot.White)
+                Spacer(Modifier.height(24.dp))
+                Art(song, Modifier.size(240.dp), px = 720, shape = RoundedCornerShape(24.dp))
+                Spacer(Modifier.height(24.dp))
+                DotTitle(song.title, size = 30.sp, align = TextAlign.Center, maxLines = 2)
+                Text(song.artist, color = Dot.Muted, style = SansSmall, textAlign = TextAlign.Center)
+                Spacer(Modifier.height(6.dp))
+                Label("${ms / 60_000} min", align = TextAlign.Center)
+            }
+            Story.Clock -> {
+                val peak = stats.hours.indices.maxBy { stats.hours[it] }
+                val hour = "${if (peak % 12 == 0) 12 else peak % 12} ${if (peak < 12) "AM" else "PM"}"
+                Label("Your listening clock", color = Dot.White)
+                Spacer(Modifier.height(24.dp))
+                ClockChart(stats.hours)
+                Spacer(Modifier.height(24.dp))
+                DotTitle("Around $hour", size = 34.sp, align = TextAlign.Center)
+                Label("is when the music is on most", align = TextAlign.Center)
+            }
+            Story.Type -> {
+                val (type, line) = listenerType(stats.hours)
+                Column(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(Dot.Red).padding(28.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Label("You're a", color = Dot.White)
+                    Spacer(Modifier.height(12.dp))
+                    DotTitle(type, size = 44.sp, align = TextAlign.Center, maxLines = 2)
+                    Spacer(Modifier.height(8.dp))
+                    Text(line, color = Dot.White.copy(alpha = 0.85f), style = MonoSmall, textAlign = TextAlign.Center)
+                }
+            }
+            Story.Summary -> {
+                ShareableSummary(stats, shareLayer)
+                Spacer(Modifier.height(20.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Pill("Share", onShare, accent = true, icon = Icons.Rounded.Share)
+                    Pill("All stats", onAll)
+                }
+            }
+        }
+    }
+}
+
+private const val STORY_MS = 5_000
+
+/** A big dot-matrix number that counts up from zero when it appears. */
+@Composable
+private fun CountUp(target: Long) {
+    val shown = remember { Animatable(0f) }
+    LaunchedEffect(target) { shown.animateTo(target.toFloat(), tween(1_400, easing = androidx.compose.animation.core.FastOutSlowInEasing)) }
+    DotTitle(NumberFormat.getIntegerInstance().format(shown.value.toLong()), size = 96.sp, align = TextAlign.Center)
+}
+
+/**
+ * Wrapped as tap-through stories: tap the right of the screen for the next card, the left for the
+ * one before. Each card moves on by itself after a few seconds; the last one waits.
+ */
+@Composable
+private fun WrappedStories(stats: WrappedStats, shareLayer: GraphicsLayer, onShare: () -> Unit, onAll: () -> Unit, onClose: () -> Unit) {
+    val stories = remember(stats) {
+        Story.entries.filter { (it != Story.Artist || stats.topArtists.isNotEmpty()) && (it != Story.Song || stats.topSongs.isNotEmpty()) }
+    }
+    var index by rememberSaveable { mutableIntStateOf(0) }
+    val progress = remember { Animatable(0f) }
+    LaunchedEffect(index) {
+        progress.snapTo(0f)
+        progress.animateTo(1f, tween(STORY_MS, easing = LinearEasing))
+        if (index < stories.lastIndex) index++
+    }
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Dot.Black)
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .pointerInput(stories.size) {
+                detectTapGestures { tap ->
+                    if (tap.x < size.width / 3f) index = (index - 1).coerceAtLeast(0)
+                    else if (index < stories.lastIndex) index++
+                }
+            },
+    ) {
+        AnimatedContent(
+            stories[index.coerceAtMost(stories.lastIndex)],
+            transitionSpec = { (fadeIn(tween(250)) + scaleIn(tween(300), initialScale = 0.94f)) togetherWith fadeOut(tween(150)) },
+            label = "story",
+        ) { story -> StoryCard(story, stats, shareLayer, onShare, onAll) }
+        Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp, top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            StoryProgress(stories.size, index, { progress.value }, Modifier.weight(1f))
+            IconBtn(Icons.Rounded.Close, onClose, description = "Close")
+        }
+    }
+}
+
+/** One dotted segment per card: past cards full, the current one filling, the rest faint. */
+@Composable
+private fun StoryProgress(count: Int, current: Int, progress: () -> Float, modifier: Modifier) {
+    Canvas(modifier.height(8.dp)) {
+        val gap = 6.dp.toPx()
+        val segment = (size.width - gap * (count - 1)) / count
+        val step = 5.dp.toPx()
+        val dots = (segment / step).toInt().coerceAtLeast(1)
+        for (i in 0 until count) {
+            val lit = when { i < current -> 1f; i == current -> progress(); else -> 0f }
+            for (d in 0 until dots) {
+                val on = (d + 0.5f) / dots <= lit
+                drawCircle(if (on) Dot.White else Dot.Faint, 1.4.dp.toPx(), Offset(i * (segment + gap) + d * step + step / 2, size.height / 2))
             }
         }
     }

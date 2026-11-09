@@ -267,9 +267,9 @@ private fun PanelSlider(title: String, value: String, fraction: Float, onChange:
     }
 }
 
-/** Live copy of the six rear LEDs, top to bottom. */
+/** Live copy of the six rear LEDs, top to bottom, or left to right when [horizontal]. */
 @Composable
-private fun StripMirror(modifier: Modifier) {
+fun StripMirror(modifier: Modifier, horizontal: Boolean = false) {
     val glyph = DotApp.instance.glyph
     val mode by DotApp.instance.settings.glyphMode.flow.collectAsStateWithLifecycle()
     var frame by remember { mutableLongStateOf(0L) }
@@ -283,16 +283,20 @@ private fun StripMirror(modifier: Modifier) {
     Canvas(modifier) {
         frame
         val values = glyph.preview
-        val step = size.height / values.size
+        val along = if (horizontal) size.width else size.height
+        val across = if (horizontal) size.height else size.width
+        val step = along / values.size
+        val thick = 8.dp.toPx()
         for (i in values.indices) {
             val v = values[i].coerceIn(0f, 1f)
-            val cy = step * i + step / 2
-            if (v > 0.5f) drawCircle(Dot.White.copy(alpha = (v - 0.5f) * 0.4f), size.width * 0.9f, Offset(size.width / 2, cy))
+            val c = step * i + step / 2
+            val centre = if (horizontal) Offset(c, across / 2) else Offset(across / 2, c)
+            if (v > 0.5f) drawCircle(Dot.White.copy(alpha = (v - 0.5f) * 0.4f), across * 0.9f, centre)
             drawRoundRect(
                 lerp(Dot.Faint, Dot.White, v),
-                topLeft = Offset(size.width / 2 - 4.dp.toPx(), cy - step * 0.36f),
-                size = Size(8.dp.toPx(), step * 0.72f),
-                cornerRadius = CornerRadius(4.dp.toPx()),
+                topLeft = if (horizontal) Offset(c - step * 0.36f, across / 2 - thick / 2) else Offset(across / 2 - thick / 2, c - step * 0.36f),
+                size = if (horizontal) Size(step * 0.72f, thick) else Size(thick, step * 0.72f),
+                cornerRadius = CornerRadius(thick / 2),
             )
         }
     }

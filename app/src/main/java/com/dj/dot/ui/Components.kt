@@ -70,6 +70,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.core.graphics.get
+import androidx.core.graphics.scale
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -152,11 +155,13 @@ fun Pill(
     selected: Boolean = false,
     accent: Boolean = false,
     icon: ImageVector? = null,
+    // False when something else draws the white fill and inverts the text, like the sliding library tab indicator.
+    filled: Boolean = selected,
 ) {
     val bg by androidx.compose.animation.animateColorAsState(
-        if (selected) Dot.White else Color.Transparent, tween(200), label = "pillBg",
+        if (selected && filled) Dot.White else Color.Transparent, tween(200), label = "pillBg",
     )
-    val fg by androidx.compose.animation.animateColorAsState(if (selected) Dot.Black else Dot.White, tween(200), label = "pillFg")
+    val fg by androidx.compose.animation.animateColorAsState(if (selected && filled) Dot.Black else Dot.White, tween(200), label = "pillFg")
     val interaction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Row(
         modifier
@@ -461,6 +466,35 @@ object ArtLoader {
     }
 }
 
+/**
+ * The cover's average colour, lifted so it can glow on black. Null while loading, for songs without
+ * a cover, and for near-grey covers, which would only glow a muddy grey.
+ */
+@Composable
+fun rememberArtTint(song: Song?): Color? {
+    val context = LocalContext.current
+    val key = song?.let { "${it.albumId}_192" }
+    var tint by remember(key) { mutableStateOf<Color?>(null) }
+    LaunchedEffect(key) {
+        if (song == null || key == null) return@LaunchedEffect
+        val cover = ArtLoader.load(context, song, key, 192) ?: return@LaunchedEffect
+        tint = withContext(Dispatchers.Default) { glowOf(cover) }
+    }
+    return tint
+}
+
+private fun glowOf(cover: ImageBitmap): Color? {
+    // Thumbnails can come back as hardware bitmaps, which can't be read pixel by pixel.
+    val source = cover.asAndroidBitmap().let { if (it.config == android.graphics.Bitmap.Config.HARDWARE) it.copy(android.graphics.Bitmap.Config.ARGB_8888, false) else it }
+    val pixel = source.scale(1, 1)[0, 0]
+    val hsv = FloatArray(3)
+    android.graphics.Color.colorToHSV(pixel, hsv)
+    if (hsv[1] < 0.15f) return null
+    hsv[1] = (hsv[1] * 1.15f).coerceAtMost(1f)
+    hsv[2] = hsv[2].coerceAtLeast(0.7f)
+    return Color(android.graphics.Color.HSVToColor(hsv))
+}
+
 @Composable
 fun Art(song: Song?, modifier: Modifier = Modifier, px: Int = 192, shape: Shape = RoundedCornerShape(10.dp)) {
     val context = LocalContext.current
@@ -474,7 +508,7 @@ fun Art(song: Song?, modifier: Modifier = Modifier, px: Int = 192, shape: Shape 
     Box(modifier.clip(shape).background(Dot.Surface2), contentAlignment = Alignment.Center) {
         val b = bitmap
         when {
-            b == null -> DotPlaceholder(Modifier.fillMaxSize())
+            b == null -> DotPlaceholder(Modifier.fillMaxSize(), seed = song?.title?.hashCode())
             // Square-ish covers fill the tile; a hair of trim is invisible.
             b.width.toFloat() / b.height in 0.9f..1.1f -> Image(b, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
             // Wide or tall covers show in full over a blurred copy of themselves.
@@ -490,9 +524,12 @@ fun Art(song: Song?, modifier: Modifier = Modifier, px: Int = 192, shape: Shape 
     }
 }
 
-/** Faint dot grid with a red centre dot, used when a track has no cover. */
+/**
+ * Faint dot grid with a red centre dot, used when a track has no cover. With a [seed] some dots
+ * light up in that song's own mirrored pattern, so coverless songs don't all look the same.
+ */
 @Composable
-fun DotPlaceholder(modifier: Modifier = Modifier) {
+fun DotPlaceholder(modifier: Modifier = Modifier, seed: Int? = null) {
     Canvas(modifier) {
         val n = 7
         val step = min(size.width, size.height) / (n + 1)
@@ -501,7 +538,9 @@ fun DotPlaceholder(modifier: Modifier = Modifier) {
         val oy = (size.height - step * (n - 1)) / 2
         for (i in 0 until n) for (j in 0 until n) {
             val centre = i == n / 2 && j == n / 2
-            drawCircle(if (centre) Dot.Red else Dot.Faint, if (centre) r * 2.2f else r, Offset(ox + i * step, oy + j * step))
+            val lit = !centre && seed != null && patternLit(seed, i, j, n)
+            val color = when { centre -> Dot.Red; lit -> Dot.Muted; else -> Dot.Faint }
+            drawCircle(color, when { centre -> r * 2.2f; lit -> r * 1.9f; else -> r }, Offset(ox + i * step, oy + j * step))
         }
     }
 }

@@ -42,16 +42,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dj.dot.DotApp
+import com.dj.dot.data.LibraryData
 import com.dj.dot.data.Song
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
-private val tabs = listOf("Songs", "Albums", "Artists", "Folders", "Playlists")
+private val tabs = listOf("Now", "Songs", "Albums", "Artists", "Folders", "Playlists")
 private val sortNames = listOf("Title", "Artist", "Recent")
 
 @Composable
@@ -73,27 +77,53 @@ fun HomeScreen() {
         val tabRow = rememberLazyListState()
         // Five pills don't fit a narrow phone, so keep the selected one and its neighbour in view.
         LaunchedEffect(pager.currentPage) { tabRow.animateScrollToItem((pager.currentPage - 1).coerceAtLeast(0)) }
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+        LaunchedEffect(pager) {
+            androidx.compose.runtime.snapshotFlow { pager.currentPage }.drop(1).collect { haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.SegmentTick) }
+        }
         LazyRow(
             state = tabRow,
             contentPadding = PaddingValues(horizontal = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(bottom = 8.dp).fadingEdges(tabRow),
+            modifier = Modifier.padding(bottom = 8.dp).fadingEdges(tabRow).tabIndicator(tabRow, pager),
         ) {
             items(tabs.size) { i ->
-                Pill(tabs[i], { scope.launch { pager.animateScrollToPage(i) } }, selected = pager.currentPage == i)
+                Pill(tabs[i], { scope.launch { pager.animateScrollToPage(i) } }, selected = pager.currentPage == i, filled = false)
             }
         }
         HorizontalPager(pager, Modifier.weight(1f), key = { it }) { page ->
             when (page) {
-                0 -> SongsTab()
-                1 -> AlbumsTab()
-                2 -> ArtistsTab()
-                3 -> FoldersTab()
+                0 -> NowTab()
+                1 -> SongsTab()
+                2 -> AlbumsTab()
+                3 -> ArtistsTab()
+                4 -> FoldersTab()
                 else -> PlaylistsTab()
             }
         }
     }
 }
+
+/**
+ * One white pill over the tabs that follows the pager as it is swiped. It inverts what it covers,
+ * so a label reads black inside the pill and white outside it, even halfway between two tabs.
+ */
+private fun Modifier.tabIndicator(row: androidx.compose.foundation.lazy.LazyListState, pager: androidx.compose.foundation.pager.PagerState): Modifier =
+    graphicsLayer { compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen }.drawWithContent {
+        drawContent()
+        val items = row.layoutInfo.visibleItemsInfo
+        val from = items.firstOrNull { it.index == pager.currentPage } ?: return@drawWithContent
+        val fraction = pager.currentPageOffsetFraction
+        val to = items.firstOrNull { it.index == pager.currentPage + if (fraction < 0f) -1 else 1 } ?: from
+        val t = kotlin.math.abs(fraction)
+        val start = row.layoutInfo.viewportStartOffset
+        val x = androidx.compose.ui.util.lerp((from.offset - start).toFloat(), (to.offset - start).toFloat(), t)
+        val w = androidx.compose.ui.util.lerp(from.size.toFloat(), to.size.toFloat(), t)
+        drawRoundRect(
+            Dot.White, androidx.compose.ui.geometry.Offset(x, 0f), androidx.compose.ui.geometry.Size(w, size.height),
+            androidx.compose.ui.geometry.CornerRadius(size.height / 2), blendMode = androidx.compose.ui.graphics.BlendMode.Difference,
+        )
+    }
 
 @Composable
 private fun SongsTab() {
@@ -119,7 +149,7 @@ private fun SongsTab() {
             LazyColumn(Modifier.fillMaxSize(), state = listState, contentPadding = PaddingValues(bottom = 16.dp)) {
                 item(key = "header") {
                     Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Label("${songs.size} songs", Modifier.weight(1f))
+                        Label(countOf(songs.size, "song"), Modifier.weight(1f))
                         Pill(sortNames[sort], { dot.settings.songSort.set((sort + 1) % sortNames.size) })
                         Spacer(Modifier.width(8.dp))
                         Pill("Shuffle", { dot.engine.playSongs(songs, shuffleAll = true) }, accent = true, icon = Icons.Rounded.Shuffle)
@@ -186,7 +216,7 @@ private fun ArtistsTab() {
             items(lib.artists, key = { it.name }) { artist ->
                 ListRow(
                     title = artist.name,
-                    subtitle = "${artist.songs.size} songs · ${artist.albumCount} albums",
+                    subtitle = "${countOf(artist.songs.size, "song")} · ${countOf(artist.albumCount, "album")}",
                     onClick = { app.push(Screen.Artist(artist.name)) },
                 ) { Art(artist.songs.first(), Modifier.size(52.dp), px = 156, shape = CircleShape) }
             }
@@ -204,7 +234,7 @@ private fun FoldersTab() {
         items(lib.folders, key = { it.path }) { folder ->
             ListRow(
                 title = folder.name,
-                subtitle = "${folder.songs.size} songs · ${folder.path.removePrefix("/storage/emulated/0")}",
+                subtitle = "${countOf(folder.songs.size, "song")} · ${folder.path.removePrefix("/storage/emulated/0")}",
                 onClick = { app.push(Screen.Folder(folder.path)) },
             ) { IconTile(DotIcons.Folder) }
         }
@@ -228,16 +258,16 @@ private fun PlaylistsTab() {
                 Pill("New playlist", { creating = true }, accent = true, icon = Icons.Rounded.Add)
             }
         }
-        item { ListRow("Favourites", "${favs.size} songs", { app.push(Screen.Playlist(SMART_FAVOURITES)) }) { IconTile(DotIcons.Heart, red = true) } }
+        item { ListRow("Favourites", countOf(favs.size, "song"), { app.push(Screen.Playlist(SMART_FAVOURITES)) }) { IconTile(DotIcons.Heart, red = true) } }
         item { ListRow("Recently added", "Latest 100", { app.push(Screen.Playlist(SMART_RECENT)) }) { IconTile(DotIcons.Recent) } }
         item { ListRow("Most played", "Your top 100", { app.push(Screen.Playlist(SMART_TOP)) }) { IconTile(DotIcons.Top) } }
         item { Label("Mood mixes · learned as you listen", Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp)) }
-        item { ListRow("Chill", "${moods[SMART_CHILL] ?: 0} songs · slow and easy", { app.push(Screen.Playlist(SMART_CHILL)) }) { IconTile(DotIcons.Chill) } }
-        item { ListRow("Groove", "${moods[SMART_GROOVE] ?: 0} songs · steady mid-tempo", { app.push(Screen.Playlist(SMART_GROOVE)) }) { IconTile(DotIcons.Groove) } }
-        item { ListRow("Hype", "${moods[SMART_HYPE] ?: 0} songs · fast and loud", { app.push(Screen.Playlist(SMART_HYPE)) }) { IconTile(DotIcons.Hype, red = true) } }
+        item { ListRow("Chill", moodLine(moods[SMART_CHILL] ?: 0, "slow and easy", "slow"), { app.push(Screen.Playlist(SMART_CHILL)) }) { IconTile(DotIcons.Chill) } }
+        item { ListRow("Groove", moodLine(moods[SMART_GROOVE] ?: 0, "steady mid-tempo", "mid-tempo"), { app.push(Screen.Playlist(SMART_GROOVE)) }) { IconTile(DotIcons.Groove) } }
+        item { ListRow("Hype", moodLine(moods[SMART_HYPE] ?: 0, "fast and loud", "fast"), { app.push(Screen.Playlist(SMART_HYPE)) }) { IconTile(DotIcons.Hype, red = true) } }
         if (playlists.isNotEmpty()) item { Label("Your playlists", Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp)) }
         items(playlists, key = { it.id }) { p ->
-            ListRow(p.name, "${p.songIds.size} songs", { app.push(Screen.Playlist(p.id)) }) { IconTile(null, text = p.name.take(1)) }
+            ListRow(p.name, countOf(p.songIds.size, "song"), { app.push(Screen.Playlist(p.id)) }) { IconTile(null, text = p.name.take(1)) }
         }
     }
     if (creating) NameDialog("New playlist", "", onDismiss = { creating = false }) { dot.store.create(it); creating = false }
@@ -250,12 +280,26 @@ const val SMART_CHILL = "smart:chill"
 const val SMART_GROOVE = "smart:groove"
 const val SMART_HYPE = "smart:hype"
 
+/** A mood mix's subtitle: its size and feel, or what to play while it's still empty. */
+private fun moodLine(count: Int, feel: String, pace: String) =
+    if (count == 0) "Still learning · play a few $pace ones" else "${countOf(count, "song")} · $feel"
+
 /** Tempo bands for the mood mixes. */
 fun moodOf(bpm: Int): String = when {
     bpm < 98 -> SMART_CHILL
     bpm <= 125 -> SMART_GROOVE
     else -> SMART_HYPE
 }
+
+/** Songs in a mood mix, sorted into it by their learned tempo. */
+fun moodSongs(lib: LibraryData, tempo: Map<Long, Int>, mood: String): List<Song> =
+    lib.songs.filter { s -> tempo[s.id]?.let { moodOf(it) == mood } == true }
+
+/** Most played first; songs never played are left out. */
+fun topSongs(lib: LibraryData, counts: Map<Long, Int>, limit: Int = 100): List<Song> =
+    counts.entries.filter { it.value > 0 }.sortedByDescending { it.value }.mapNotNull { lib.byId[it.key] }.take(limit)
+
+fun recentSongs(lib: LibraryData, limit: Int = 100): List<Song> = lib.songs.sortedByDescending { it.dateAdded }.take(limit)
 
 @Composable
 fun ListRow(title: String, subtitle: String, onClick: () -> Unit, leading: @Composable () -> Unit) {

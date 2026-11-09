@@ -42,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -82,10 +83,10 @@ fun HomeScreen() {
             state = tabRow,
             contentPadding = PaddingValues(horizontal = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(bottom = 8.dp).fadingEdges(tabRow),
+            modifier = Modifier.padding(bottom = 8.dp).fadingEdges(tabRow).tabIndicator(tabRow, pager),
         ) {
             items(tabs.size) { i ->
-                Pill(tabs[i], { scope.launch { pager.animateScrollToPage(i) } }, selected = pager.currentPage == i)
+                Pill(tabs[i], { scope.launch { pager.animateScrollToPage(i) } }, selected = pager.currentPage == i, filled = false)
             }
         }
         HorizontalPager(pager, Modifier.weight(1f), key = { it }) { page ->
@@ -99,6 +100,20 @@ fun HomeScreen() {
         }
     }
 }
+
+/** One white pill behind the tabs that follows the pager as it is swiped, instead of each tab flipping on its own. */
+private fun Modifier.tabIndicator(row: androidx.compose.foundation.lazy.LazyListState, pager: androidx.compose.foundation.pager.PagerState): Modifier =
+    drawBehind {
+        val items = row.layoutInfo.visibleItemsInfo
+        val from = items.firstOrNull { it.index == pager.currentPage } ?: return@drawBehind
+        val fraction = pager.currentPageOffsetFraction
+        val to = items.firstOrNull { it.index == pager.currentPage + if (fraction < 0f) -1 else 1 } ?: from
+        val t = kotlin.math.abs(fraction)
+        val start = row.layoutInfo.viewportStartOffset
+        val x = androidx.compose.ui.util.lerp((from.offset - start).toFloat(), (to.offset - start).toFloat(), t)
+        val w = androidx.compose.ui.util.lerp(from.size.toFloat(), to.size.toFloat(), t)
+        drawRoundRect(Dot.White, androidx.compose.ui.geometry.Offset(x, 0f), androidx.compose.ui.geometry.Size(w, size.height), androidx.compose.ui.geometry.CornerRadius(size.height / 2))
+    }
 
 @Composable
 private fun SongsTab() {

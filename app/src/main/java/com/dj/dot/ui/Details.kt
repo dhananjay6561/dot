@@ -43,7 +43,7 @@ import com.dj.dot.data.Song
 fun AlbumScreen(id: Long) {
     val lib by DotApp.instance.library.data.collectAsStateWithLifecycle()
     val album = lib.albums.firstOrNull { it.id == id } ?: return Missing()
-    val meta = listOfNotNull(album.artist, album.year.takeIf { it > 0 }?.toString(), "${album.songs.size} songs").joinToString(" · ")
+    val meta = listOfNotNull(album.artist, album.year.takeIf { it > 0 }?.toString(), countOf(album.songs.size, "song")).joinToString(" · ")
     SongListScreen(album.title, meta, album.songs, cover = album.songs.first(), trackNumbers = true)
 }
 
@@ -51,14 +51,14 @@ fun AlbumScreen(id: Long) {
 fun ArtistScreen(name: String) {
     val lib by DotApp.instance.library.data.collectAsStateWithLifecycle()
     val artist = lib.artists.firstOrNull { it.name == name } ?: return Missing()
-    SongListScreen(artist.name, "${artist.songs.size} songs · ${artist.albumCount} albums", artist.songs, cover = artist.songs.first(), coverShape = CircleShape)
+    SongListScreen(artist.name, "${countOf(artist.songs.size, "song")} · ${countOf(artist.albumCount, "album")}", artist.songs, cover = artist.songs.first(), coverShape = CircleShape)
 }
 
 @Composable
 fun FolderScreen(path: String) {
     val lib by DotApp.instance.library.data.collectAsStateWithLifecycle()
     val folder = lib.folders.firstOrNull { it.path == path } ?: return Missing()
-    SongListScreen(folder.name, "${folder.songs.size} songs", folder.songs, cover = null)
+    SongListScreen(folder.name, countOf(folder.songs.size, "song"), folder.songs, cover = null)
 }
 
 @Composable
@@ -73,21 +73,21 @@ fun PlaylistScreen(id: String) {
     when (id) {
         SMART_FAVOURITES -> {
             val songs = remember(lib, favs) { lib.songs.filter { it.id in favs } }
-            SongListScreen("Favourites", "${songs.size} songs", songs, cover = songs.firstOrNull())
+            SongListScreen("Favourites", countOf(songs.size, "song"), songs, cover = songs.firstOrNull())
         }
         SMART_RECENT -> {
             val songs = remember(lib) { recentSongs(lib) }
-            SongListScreen("Recently added", "${songs.size} songs", songs, cover = songs.firstOrNull())
+            SongListScreen("Recently added", countOf(songs.size, "song"), songs, cover = songs.firstOrNull())
         }
         SMART_TOP -> {
             val songs = remember(lib, counts) { topSongs(lib, counts) }
-            SongListScreen("Most played", "${songs.size} songs", songs, cover = songs.firstOrNull())
+            SongListScreen("Most played", countOf(songs.size, "song"), songs, cover = songs.firstOrNull())
         }
         SMART_CHILL, SMART_GROOVE, SMART_HYPE -> {
             val tempo by dot.store.bpm.collectAsStateWithLifecycle()
             val songs = remember(lib, tempo) { moodSongs(lib, tempo, id) }
             val name = when (id) { SMART_CHILL -> "Chill"; SMART_GROOVE -> "Groove"; else -> "Hype" }
-            SongListScreen(name, "${songs.size} songs · grows as Dot learns your music", songs, cover = songs.firstOrNull())
+            SongListScreen(name, "${countOf(songs.size, "song")} · grows as Dot learns your music", songs, cover = songs.firstOrNull())
         }
         else -> {
             val playlist = playlists.firstOrNull { it.id == id } ?: return Missing()
@@ -99,7 +99,7 @@ fun PlaylistScreen(id: String) {
             var renaming by remember { mutableStateOf(false) }
             var menu by remember { mutableStateOf(false) }
             SongListScreen(
-                playlist.name, "${songs.size} songs", songs, cover = songs.firstOrNull(), playlistId = playlist.id,
+                playlist.name, countOf(songs.size, "song"), songs, cover = songs.firstOrNull(), playlistId = playlist.id,
                 playlistIndex = { rows[it].first },
                 actions = {
                     Box {

@@ -154,7 +154,7 @@ fun NowPlayingScreen(onClose: () -> Unit) {
                 Column(Modifier.weight(1f)) {
                     DotTitle(song.title, Modifier.basicMarquee(), size = 28.sp)
                     Text(
-                        "${song.artist}  ·  ${song.album}", color = Dot.Muted, style = MonoSmall,
+                        "${song.artist}  ·  ${song.album}", color = Dot.Muted, style = SansSmall,
                         maxLines = 1, overflow = TextOverflow.Ellipsis,
                     )
                     val earphones by dot.headphones.connected.collectAsStateWithLifecycle()

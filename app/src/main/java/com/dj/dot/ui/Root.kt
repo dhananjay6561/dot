@@ -265,6 +265,7 @@ fun rememberProgress(intervalMs: Long = 250): Pair<Long, Long> {
 private fun MiniPlayer(song: Song, playing: Boolean, onOpen: () -> Unit) {
     val engine = DotApp.instance.engine
     val app = LocalAppState.current
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
     val shared = LocalSharedTransition.current
     val artModifier = if (shared == null) Modifier else with(shared) {
         Modifier.sharedElementWithCallerManagedVisibility(rememberSharedContentState(NOW_PLAYING_ART), visible = !app.nowPlaying)
@@ -283,7 +284,7 @@ private fun MiniPlayer(song: Song, playing: Boolean, onOpen: () -> Unit) {
                 Text(song.title, color = Dot.White, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(song.artist, color = Dot.Muted, style = SansSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
-            IconBtn(if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, engine::toggle, size = 28.dp)
+            IconBtn(if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, { haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.ContextClick); engine.toggle() }, size = 28.dp)
             IconBtn(Icons.Rounded.SkipNext, engine::next)
         }
         MiniProgress()

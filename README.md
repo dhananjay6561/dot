@@ -267,7 +267,7 @@ Dot is a single-module app in four layers. Data flows up as `StateFlow`; command
 flowchart TB
     subgraph UI["UI · Jetpack Compose"]
         direction LR
-        Screens["Home · Details · Search<br/>Settings · Sound · Wrapped"]
+        Screens["Home: Now page + library tabs<br/>Details · Search · Settings<br/>Sound · Wrapped stories"]
         NP["Now Playing<br/>cover styles · visualizer<br/>lyrics · queue"]
         Overlays["Party mode · Bedside clock<br/>Visuals · Sleep dial · Song menu"]
         Gestures["Shake · double-tap · swipes"]
@@ -322,6 +322,7 @@ flowchart TB
 - **Each player has its own tap.** Only the active player's audio reaches the analyser, so a crossfade never blends two songs into one beat track.
 - **Settings cross threads as one snapshot.** `AudioFx` turns the sound settings into an immutable `DspConfig` and publishes it in a single write; each player's `DotDsp` reads it once per buffer.
 - **Overlays are plain composables.** Party mode, the bedside clock and the sheets sit on top of the navigation stack in `Root`, so they keep their own state and close with back.
+- **One shared cover.** `Root` wraps the app in a `SharedTransitionLayout`, so the mini player art and the Now Playing cover are one shared element. The bedside clock sits outside it, so the animation never draws over the clock.
 
 ### Data and persistence
 
@@ -357,7 +358,9 @@ flowchart LR
 ```mermaid
 flowchart LR
     Home --> Album & Artist & Folder & Playlist
+    Home --> Now["Now page"] --> Playlist
     Home --> Search & Settings & Wrapped
+    Wrapped --> Stories["Stories"] --> Stats["All stats"]
     Settings --> Sound
     Mini["Mini player"] --> NP["Now Playing"]
     NP --> Visuals & Sleep["Sleep dial"] & Sound

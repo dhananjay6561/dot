@@ -349,7 +349,8 @@ private fun ArtPanel(song: com.dj.dot.data.Song, playing: Boolean, showViz: Bool
 private fun Modifier.dotGlow(centre: Offset, color: () -> Color): Modifier = drawWithCache {
     val step = 14.dp.toPx()
     val origin = Offset(size.width * centre.x, size.height * centre.y)
-    val reach = size.minDimension * 0.95f
+    // Reaches well past the cover, since the cover hides the brightest rings.
+    val reach = size.minDimension * 1.25f
     val rings = 6
     val buckets = List(rings) { ArrayList<Offset>() }
     var y = step / 2
@@ -367,7 +368,7 @@ private fun Modifier.dotGlow(centre: Offset, color: () -> Color): Modifier = dra
         if (c.alpha == 0f) return@onDrawBehind
         buckets.forEachIndexed { i, points ->
             val near = 1f - i / rings.toFloat()
-            drawPoints(points, PointMode.Points, c.copy(alpha = c.alpha * 0.2f * near * near), strokeWidth = step * (0.16f + 0.24f * near), cap = StrokeCap.Round)
+            drawPoints(points, PointMode.Points, c.copy(alpha = c.alpha * 0.35f * near), strokeWidth = step * (0.2f + 0.26f * near), cap = StrokeCap.Round)
         }
     }
 }

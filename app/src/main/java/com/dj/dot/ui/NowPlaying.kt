@@ -252,6 +252,7 @@ private fun ArtPanel(song: com.dj.dot.data.Song, playing: Boolean, showViz: Bool
             Modifier
                 .weight(1f, fill = false)
                 .aspectRatio(1f)
+                .sharedNowPlayingArt()
                 // On the record, sideways drags scratch instead of skipping.
                 .pointerInput(artStyle) {
                     if (artStyle == ArtStyle.Vinyl) return@pointerInput
@@ -310,6 +311,15 @@ private fun ArtPanel(song: com.dj.dot.data.Song, playing: Boolean, showViz: Bool
             )
         }
     }
+}
+
+/** The cover grows out of the mini player art when Now Playing opens, and shrinks back into it. */
+@OptIn(androidx.compose.animation.ExperimentalSharedTransitionApi::class)
+@Composable
+private fun Modifier.sharedNowPlayingArt(): Modifier {
+    val shared = LocalSharedTransition.current ?: return this
+    val visibility = LocalNowPlayingVisibility.current ?: return this
+    return with(shared) { this@sharedNowPlayingArt.sharedElement(rememberSharedContentState(NOW_PLAYING_ART), visibility) }
 }
 
 @Composable

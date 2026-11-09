@@ -142,10 +142,11 @@ See the [full release notes](https://github.com/dhananjay6561/dot/releases/tag/v
 - Opens instantly from a cached index and only rescans when Android reports a change
 
 **Dot Wrapped**
-- Total listening time, top artists, top songs and a day streak
+- Opens as full-screen stories: tap the right side for the next card, the left for the one before; each moves on by itself after five seconds
+- Total listening time that counts up, top artists, top songs and a day streak
 - A listening clock showing when in the day you listen, and the last seven days
 - A listener type (Early bird, Daydreamer, Evening soul, Night owl)
-- A summary card you can share as an image
+- A summary card you can share as an image, and **All stats** for every chart on one page
 
 **Gestures**
 - Double-tap the art to like, with a heart burst

@@ -154,9 +154,13 @@ See the [full release notes](https://github.com/dhananjay6561/dot/releases/tag/v
 - Shake the phone back and forth for a random song
 
 **Feel**
+- The cover grows out of the mini player into Now Playing and shrinks back when you close it
+- New screens settle in on a soft spring; one white indicator slides between the library tabs as you swipe
+- Haptic ticks on play and pause, liking a song, switching tabs and moving songs in the queue
 - Nothing-style dot-matrix sliders that grow under your finger, with value bubbles and haptic ticks
 - Buttons and pills squish on press, icons scale and cross-fade when they change, colours fade between states
 - Liking a song pops the heart
+- Red is kept for what's live, like the playing song, the seek head and beats; switches and controls stay black and white
 - Two-pane Now Playing in landscape; sheets open fully and scroll on short screens
 
 **Earphones**

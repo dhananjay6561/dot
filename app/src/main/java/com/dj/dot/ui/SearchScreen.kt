@@ -105,7 +105,7 @@ fun SearchScreen() {
 
         when {
             q.isEmpty() -> EmptyState("Find anything", "Songs, albums and artists")
-            songs.isEmpty() && albums.isEmpty() && artists.isEmpty() -> EmptyState("Nothing", "No matches for \"$q\"")
+            songs.isEmpty() && albums.isEmpty() && artists.isEmpty() -> EmptyState("Nothing yet", "No song, album or artist called \"$q\".")
             else -> LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(vertical = 8.dp)) {
                 if (artists.isNotEmpty()) {
                     item { Label("Artists", Modifier.padding(start = 20.dp, top = 8.dp, bottom = 8.dp)) }

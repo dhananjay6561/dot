@@ -64,7 +64,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shape
@@ -124,6 +126,21 @@ fun Modifier.pressable(interaction: androidx.compose.foundation.interaction.Muta
         )
         graphicsLayer { scaleX = scale; scaleY = scale }
     }
+
+/** Fades a scrolling row out at whichever edge still has more to scroll to. */
+fun Modifier.fadingEdges(state: LazyListState, width: Dp = 28.dp): Modifier =
+    graphicsLayer { compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen }
+        .drawWithContent {
+            drawContent()
+            val w = width.toPx()
+            val dstIn = androidx.compose.ui.graphics.BlendMode.DstIn
+            if (state.canScrollBackward) {
+                drawRect(Brush.horizontalGradient(listOf(Color.Transparent, Color.Black), startX = 0f, endX = w), blendMode = dstIn)
+            }
+            if (state.canScrollForward) {
+                drawRect(Brush.horizontalGradient(listOf(Color.Black, Color.Transparent), startX = size.width - w, endX = size.width), blendMode = dstIn)
+            }
+        }
 
 // ---- Controls -----------------------------------------------------------------------------
 

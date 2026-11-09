@@ -77,7 +77,7 @@ fun HomeScreen() {
             state = tabRow,
             contentPadding = PaddingValues(horizontal = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(bottom = 8.dp),
+            modifier = Modifier.padding(bottom = 8.dp).fadingEdges(tabRow),
         ) {
             items(tabs.size) { i ->
                 Pill(tabs[i], { scope.launch { pager.animateScrollToPage(i) } }, selected = pager.currentPage == i)

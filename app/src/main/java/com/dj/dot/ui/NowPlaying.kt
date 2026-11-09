@@ -389,7 +389,7 @@ private fun QueuePanel() {
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = (state.index - 1).coerceAtLeast(0))
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
     Column(Modifier.fillMaxSize()) {
-        Label("Up next · ${state.queue.size - state.index - 1} songs", Modifier.padding(vertical = 8.dp))
+        Label("Up next · ${countOf(state.queue.size - state.index - 1, "song")}", Modifier.padding(vertical = 8.dp))
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
             itemsIndexed(state.queue, key = { i, s -> "$i-${s.id}" }) { i, s ->
                 val current = i == state.index

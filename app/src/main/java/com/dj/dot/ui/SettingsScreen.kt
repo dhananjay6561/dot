@@ -180,7 +180,7 @@ fun SettingsScreen() {
             }
         }
         item { BackupRows() }
-        item { NavRow("Rescan library", if (scanning) "Scanning…" else "${lib.songs.size} songs") { dot.library.rescan() } }
+        item { NavRow("Rescan library", if (scanning) "Scanning…" else countOf(lib.songs.size, "song")) { dot.library.rescan() } }
         item {
             val count = lyricsFolders.lines().count { it.isNotBlank() }
             NavRow("Lyrics folders", if (count == 0) "Pick the folders with your .lrc files" else "$count folder${if (count == 1) "" else "s"} · tap to add another") {
@@ -490,7 +490,7 @@ private fun BackupRows() {
                         result
                             .onSuccess { backup ->
                                 if (backup == null) toast("That file is too big to be a Dot backup")
-                                else { dot.store.restore(backup); toast("Restored · ${backup.matched} songs matched") }
+                                else { dot.store.restore(backup); toast("Restored · ${countOf(backup.matched, "song")} matched") }
                             }
                             .onFailure { toast("That file isn't a Dot backup") }
                     }

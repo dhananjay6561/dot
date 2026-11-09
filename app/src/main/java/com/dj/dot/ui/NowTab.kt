@@ -129,7 +129,7 @@ private fun MixCard(name: String, glyph: DotGlyph, songs: List<Song>, onOpen: ()
         }
         Spacer(Modifier.height(12.dp))
         DotTitle(name, size = 22.sp)
-        Label(if (songs.isEmpty()) "Learning" else "${songs.size} songs")
+        Label(if (songs.isEmpty()) "Learning" else countOf(songs.size, "song"))
     }
 }
 
@@ -144,7 +144,7 @@ private fun WrappedStrip(minutes: Long, songsPlayed: Int, onOpen: () -> Unit) {
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
             DotTitle("$minutes min", size = 24.sp)
-            Label("$songsPlayed songs played · your Wrapped")
+            Label("${countOf(songsPlayed, "song")} played · your Wrapped")
         }
     }
 }

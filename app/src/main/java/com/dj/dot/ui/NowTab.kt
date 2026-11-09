@@ -102,7 +102,8 @@ private fun SectionHeader(title: String, onAll: (() -> Unit)? = null) {
 private fun SongCards(songs: List<Song>, onPlay: (Int) -> Unit) {
     LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         itemsIndexed(songs, key = { i, s -> "$i-${s.id}" }) { i, song ->
-            Column(Modifier.width(128.dp).clip(RoundedCornerShape(14.dp)).clickable { onPlay(i) }) {
+            // Only the top corners round, so the press ripple can't clip the first letter of the artist line.
+            Column(Modifier.width(128.dp).clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp)).clickable { onPlay(i) }) {
                 Art(song, Modifier.size(128.dp), px = 384, shape = RoundedCornerShape(14.dp))
                 Spacer(Modifier.height(8.dp))
                 Text(song.title, color = Dot.White, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)

@@ -48,8 +48,11 @@ data class LibraryData(
     companion object {
         private val byText = String.CASE_INSENSITIVE_ORDER
 
+        /** Titles that start with a letter come first; numbers and symbols follow as the # group, like other players. */
+        internal fun startsWithLetter(text: String) = text.trimStart().firstOrNull()?.isLetter() == true
+
         fun build(all: List<Song>): LibraryData {
-            val songs = all.sortedWith(compareBy(byText) { it.title })
+            val songs = all.sortedWith(compareBy<Song> { !startsWithLetter(it.title) }.thenBy(byText) { it.title })
             val albums = all.groupBy { it.albumId }.map { (id, list) ->
                 val sorted = list.sortedWith(compareBy<Song> { it.track }.thenBy(byText) { it.title })
                 val artists = list.map { it.artist }.distinct()

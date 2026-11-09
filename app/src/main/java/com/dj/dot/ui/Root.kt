@@ -167,60 +167,63 @@ private fun MainUi() {
     val holder = rememberSaveableStateHolder()
 
     CompositionLocalProvider(LocalAppState provides app) {
-        SharedTransitionLayout {
-            CompositionLocalProvider(LocalSharedTransition provides this) {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(Dot.Black)
-                        .pointerInput(Unit) {
-                            // Watches touches without consuming them, so bedside mode knows when the phone is idle.
-                            awaitPointerEventScope {
-                                while (true) {
-                                    awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Initial)
-                                    app.lastTouch = android.os.SystemClock.uptimeMillis()
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(Dot.Black)
+                .pointerInput(Unit) {
+                    // Watches touches without consuming them, so bedside mode knows when the phone is idle.
+                    awaitPointerEventScope {
+                        while (true) {
+                            awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Initial)
+                            app.lastTouch = android.os.SystemClock.uptimeMillis()
+                        }
+                    }
+                },
+        ) {
+            SharedTransitionLayout {
+                CompositionLocalProvider(LocalSharedTransition provides this) {
+                    Box(Modifier.fillMaxSize()) {
+                        Column(Modifier.fillMaxSize()) {
+                            Box(Modifier.weight(1f)) {
+                                AnimatedContent(
+                                    targetState = app.stack.last(),
+                                    // New screens settle in on a soft spring instead of a flat cross-fade.
+                                    transitionSpec = {
+                                        (fadeIn(tween(200)) + scaleIn(spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow), initialScale = 0.96f)) togetherWith
+                                            fadeOut(tween(120))
+                                    },
+                                    label = "screens",
+                                ) { screen ->
+                                    holder.SaveableStateProvider(screen.key) { ScreenContent(screen) }
                                 }
                             }
-                        },
-                ) {
-                    Column(Modifier.fillMaxSize()) {
-                        Box(Modifier.weight(1f)) {
-                            AnimatedContent(
-                                targetState = app.stack.last(),
-                                // New screens settle in on a soft spring instead of a flat cross-fade.
-                                transitionSpec = {
-                                    (fadeIn(tween(200)) + scaleIn(spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessMediumLow), initialScale = 0.96f)) togetherWith
-                                        fadeOut(tween(120))
-                                },
-                                label = "screens",
-                            ) { screen ->
-                                holder.SaveableStateProvider(screen.key) { ScreenContent(screen) }
+                            state.current?.let { song ->
+                                MiniPlayer(song, state.playing, onOpen = { app.nowPlaying = true })
+                            }
+                            Spacer(Modifier.navigationBarsPadding())
+                        }
+
+                        AnimatedVisibility(
+                            visible = app.nowPlaying && state.current != null,
+                            // A short lift and fade, so the cover growing out of the mini player leads the motion.
+                            enter = fadeIn(tween(220)) + slideInVertically(tween(320)) { it / 10 },
+                            exit = fadeOut(tween(200)) + slideOutVertically(tween(260)) { it / 10 },
+                        ) {
+                            CompositionLocalProvider(LocalNowPlayingVisibility provides this) {
+                                NowPlayingScreen(onClose = { app.nowPlaying = false })
                             }
                         }
-                        state.current?.let { song ->
-                            MiniPlayer(song, state.playing, onOpen = { app.nowPlaying = true })
-                        }
-                        Spacer(Modifier.navigationBarsPadding())
+
+                        if (app.party && state.current != null) PartyMode(onExit = { app.party = false })
+
+                        app.menu?.let { SongMenuSheet(it, onDismiss = { app.menu = null }) }
+                        app.addToPlaylist?.let { AddToPlaylistSheet(it, onDismiss = { app.addToPlaylist = null }) }
                     }
-
-                    AnimatedVisibility(
-                        visible = app.nowPlaying && state.current != null,
-                        // A short lift and fade, so the cover growing out of the mini player leads the motion.
-                        enter = fadeIn(tween(220)) + slideInVertically(tween(320)) { it / 10 },
-                        exit = fadeOut(tween(200)) + slideOutVertically(tween(260)) { it / 10 },
-                    ) {
-                        CompositionLocalProvider(LocalNowPlayingVisibility provides this) {
-                            NowPlayingScreen(onClose = { app.nowPlaying = false })
-                        }
-                    }
-
-                    if (app.party && state.current != null) PartyMode(onExit = { app.party = false })
-                    if (app.bedside) BedsideMode(onExit = { app.bedside = false })
-
-                    app.menu?.let { SongMenuSheet(it, onDismiss = { app.menu = null }) }
-                    app.addToPlaylist?.let { AddToPlaylistSheet(it, onDismiss = { app.addToPlaylist = null }) }
                 }
             }
+            // The bedside clock sits outside the shared-transition layer, so the cover animation can never draw over it.
+            if (app.bedside) BedsideMode(onExit = { app.bedside = false })
         }
 
         ShakeToShuffle()

@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dj.dot.DotApp
+import com.dj.dot.data.LibraryData
 import com.dj.dot.data.Song
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
@@ -284,6 +285,16 @@ fun moodOf(bpm: Int): String = when {
     bpm <= 125 -> SMART_GROOVE
     else -> SMART_HYPE
 }
+
+/** Songs in a mood mix, sorted into it by their learned tempo. */
+fun moodSongs(lib: LibraryData, tempo: Map<Long, Int>, mood: String): List<Song> =
+    lib.songs.filter { s -> tempo[s.id]?.let { moodOf(it) == mood } == true }
+
+/** Most played first; songs never played are left out. */
+fun topSongs(lib: LibraryData, counts: Map<Long, Int>, limit: Int = 100): List<Song> =
+    counts.entries.filter { it.value > 0 }.sortedByDescending { it.value }.mapNotNull { lib.byId[it.key] }.take(limit)
+
+fun recentSongs(lib: LibraryData, limit: Int = 100): List<Song> = lib.songs.sortedByDescending { it.dateAdded }.take(limit)
 
 @Composable
 fun ListRow(title: String, subtitle: String, onClick: () -> Unit, leading: @Composable () -> Unit) {

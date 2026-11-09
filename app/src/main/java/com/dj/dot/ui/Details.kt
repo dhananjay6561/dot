@@ -76,18 +76,16 @@ fun PlaylistScreen(id: String) {
             SongListScreen("Favourites", "${songs.size} songs", songs, cover = songs.firstOrNull())
         }
         SMART_RECENT -> {
-            val songs = remember(lib) { lib.songs.sortedByDescending { it.dateAdded }.take(100) }
+            val songs = remember(lib) { recentSongs(lib) }
             SongListScreen("Recently added", "${songs.size} songs", songs, cover = songs.firstOrNull())
         }
         SMART_TOP -> {
-            val songs = remember(lib, counts) {
-                counts.entries.filter { it.value > 0 }.sortedByDescending { it.value }.mapNotNull { lib.byId[it.key] }.take(100)
-            }
+            val songs = remember(lib, counts) { topSongs(lib, counts) }
             SongListScreen("Most played", "${songs.size} songs", songs, cover = songs.firstOrNull())
         }
         SMART_CHILL, SMART_GROOVE, SMART_HYPE -> {
             val tempo by dot.store.bpm.collectAsStateWithLifecycle()
-            val songs = remember(lib, tempo) { lib.songs.filter { s -> tempo[s.id]?.let { moodOf(it) == id } == true } }
+            val songs = remember(lib, tempo) { moodSongs(lib, tempo, id) }
             val name = when (id) { SMART_CHILL -> "Chill"; SMART_GROOVE -> "Groove"; else -> "Hype" }
             SongListScreen(name, "${songs.size} songs · grows as Dot learns your music", songs, cover = songs.firstOrNull())
         }

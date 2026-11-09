@@ -79,6 +79,30 @@ object DotIcons {
         "....X....",
     )
 
+    /** Four corners: full-screen Party mode. */
+    val Party = DotGlyph(
+        "XXX...XXX",
+        "X.......X",
+        "X.......X",
+        ".........",
+        ".........",
+        ".........",
+        "X.......X",
+        "X.......X",
+        "XXX...XXX",
+    )
+
+    /** Two sliders: the Sound screen. */
+    val Sound = DotGlyph(
+        "..X......",
+        "XXXXXXXXX",
+        "..X......",
+        ".........",
+        "......X..",
+        "XXXXXXXXX",
+        "......X..",
+    )
+
     val Heart = DotGlyph(
         ".XX...XX.",
         "XXXX.XXXX",

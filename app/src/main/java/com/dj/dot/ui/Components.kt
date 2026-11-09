@@ -152,13 +152,13 @@ fun Pill(
     selected: Boolean = false,
     accent: Boolean = false,
     icon: ImageVector? = null,
-    // False when something else draws the white fill, like the sliding library tab indicator.
+    // False when something else draws the white fill and inverts the text, like the sliding library tab indicator.
     filled: Boolean = selected,
 ) {
     val bg by androidx.compose.animation.animateColorAsState(
         if (selected && filled) Dot.White else Color.Transparent, tween(200), label = "pillBg",
     )
-    val fg by androidx.compose.animation.animateColorAsState(if (selected) Dot.Black else Dot.White, tween(200), label = "pillFg")
+    val fg by androidx.compose.animation.animateColorAsState(if (selected && filled) Dot.Black else Dot.White, tween(200), label = "pillFg")
     val interaction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Row(
         modifier

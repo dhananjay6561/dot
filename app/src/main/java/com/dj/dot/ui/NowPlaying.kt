@@ -40,7 +40,6 @@ import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.Fullscreen
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
@@ -51,7 +50,6 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.RepeatOne
 import androidx.compose.material.icons.rounded.Shuffle
-import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -126,10 +124,10 @@ fun NowPlayingScreen(onClose: () -> Unit) {
     ) {
         Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             IconBtn(Icons.Rounded.KeyboardArrowDown, onClose, size = 30.dp)
-            IconBtn(Icons.Rounded.Fullscreen, { app.party = true }, size = 24.dp)
+            DotIconBtn(DotIcons.Party, { app.party = true })
             Label("Now playing", Modifier.weight(1f), color = Dot.White, align = TextAlign.Center)
             DotIconBtn(DotIcons.Visuals, { visualsSheet = true }, tint = if (glyphMode != 0) Dot.Red else Dot.White)
-            IconBtn(Icons.Rounded.Tune, { app.push(Screen.Equalizer) }, description = "Sound and equalizer")
+            DotIconBtn(DotIcons.Sound, { app.push(Screen.Equalizer) }, description = "Sound and equalizer")
         }
 
         // Phones in landscape get two panes: the art, lyrics or queue on the left, controls on the right.

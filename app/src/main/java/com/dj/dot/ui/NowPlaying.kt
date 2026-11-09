@@ -332,7 +332,7 @@ private fun QueuePanel() {
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(s.title, color = if (current) Dot.Red else if (i < state.index) Dot.Muted else Dot.White, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text(s.artist, color = Dot.Muted, style = MonoSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(s.artist, color = Dot.Muted, style = SansSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     if (!current) {
                         IconBtn(Icons.Rounded.KeyboardArrowUp, { engine.moveInQueue(i, i - 1) }, tint = Dot.Muted, size = 20.dp)

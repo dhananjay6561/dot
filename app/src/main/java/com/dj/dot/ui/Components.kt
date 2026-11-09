@@ -511,7 +511,7 @@ fun SongRow(
                 fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis,
             )
             Text(
-                "${song.artist}  ·  ${formatTime(song.duration)}", color = Dot.Muted, style = MonoSmall,
+                "${song.artist}  ·  ${formatTime(song.duration)}", color = Dot.Muted, style = SansSmall,
                 maxLines = 1, overflow = TextOverflow.Ellipsis,
             )
         }

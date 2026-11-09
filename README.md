@@ -129,11 +129,14 @@ See the [full release notes](https://github.com/dhananjay6561/dot/releases/tag/v
 - Reads `.lrc` files only from the folders you pick in Settings, with no all-files access
 
 **Library**
+- A **Now** page first: up next from your queue, mood mix cards, most played, recently added and your Wrapped minutes, each with a link to the full list
 - Songs, albums, artists, folders and playlists
 - Favourites, Recently added and Most played lists
 - Mood mixes: Dot learns each song's tempo on its first play and sorts it into **Chill**, **Groove** or **Hype**
 - Search across songs, albums and artists
 - Fast scroller with a letter bubble on long lists
+- Titles that start with a number or symbol sort after the alphabet, in a # group, like other players
+- Songs without a cover get their own mirrored dot pattern, made from the title, so they're easy to tell apart
 - Cleans download-site junk from tags for display, such as "(DjPunjab.CoM)", "- PagalNew" or "320 Kbps"; files are never modified
 - Hides WhatsApp voice notes and clips below a minimum length
 - Opens instantly from a cached index and only rescans when Android reports a change

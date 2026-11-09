@@ -2,6 +2,23 @@ package com.dj.dot.ui
 
 import android.content.Intent
 import android.graphics.Bitmap
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -132,7 +149,9 @@ fun WrappedScreen() {
         context.startActivity(Intent.createChooser(send, "Share your Dot Wrapped"))
     }
 
-    WrappedList(stats, shareLayer, onShare = { share() }, onBack = app::pop)
+    var showList by rememberSaveable { mutableStateOf(false) }
+    if (showList || stats.totalMinutes < 1) WrappedList(stats, shareLayer, onShare = { share() }, onBack = app::pop)
+    else WrappedStories(stats, shareLayer, onShare = { share() }, onAll = { showList = true }, onClose = app::pop)
 }
 
 /** Every stat on one scrolling page, with the shareable summary card on top. */
@@ -370,6 +389,67 @@ private fun StoryCard(story: Story, stats: WrappedStats, shareLayer: GraphicsLay
                     Pill("Share", onShare, accent = true, icon = Icons.Rounded.Share)
                     Pill("All stats", onAll)
                 }
+            }
+        }
+    }
+}
+
+private const val STORY_MS = 5_000
+
+/**
+ * Wrapped as tap-through stories: tap the right of the screen for the next card, the left for the
+ * one before. Each card moves on by itself after a few seconds; the last one waits.
+ */
+@Composable
+private fun WrappedStories(stats: WrappedStats, shareLayer: GraphicsLayer, onShare: () -> Unit, onAll: () -> Unit, onClose: () -> Unit) {
+    val stories = remember(stats) {
+        Story.entries.filter { (it != Story.Artist || stats.topArtists.isNotEmpty()) && (it != Story.Song || stats.topSongs.isNotEmpty()) }
+    }
+    var index by rememberSaveable { mutableIntStateOf(0) }
+    val progress = remember { Animatable(0f) }
+    LaunchedEffect(index) {
+        progress.snapTo(0f)
+        progress.animateTo(1f, tween(STORY_MS, easing = LinearEasing))
+        if (index < stories.lastIndex) index++
+    }
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Dot.Black)
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .pointerInput(stories.size) {
+                detectTapGestures { tap ->
+                    if (tap.x < size.width / 3f) index = (index - 1).coerceAtLeast(0)
+                    else if (index < stories.lastIndex) index++
+                }
+            },
+    ) {
+        AnimatedContent(
+            stories[index.coerceAtMost(stories.lastIndex)],
+            transitionSpec = { (fadeIn(tween(250)) + scaleIn(tween(300), initialScale = 0.94f)) togetherWith fadeOut(tween(150)) },
+            label = "story",
+        ) { story -> StoryCard(story, stats, shareLayer, onShare, onAll) }
+        Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp, top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            StoryProgress(stories.size, index, { progress.value }, Modifier.weight(1f))
+            IconBtn(Icons.Rounded.Close, onClose, description = "Close")
+        }
+    }
+}
+
+/** One dotted segment per card: past cards full, the current one filling, the rest faint. */
+@Composable
+private fun StoryProgress(count: Int, current: Int, progress: () -> Float, modifier: Modifier) {
+    Canvas(modifier.height(8.dp)) {
+        val gap = 6.dp.toPx()
+        val segment = (size.width - gap * (count - 1)) / count
+        val step = 5.dp.toPx()
+        val dots = (segment / step).toInt().coerceAtLeast(1)
+        for (i in 0 until count) {
+            val lit = when { i < current -> 1f; i == current -> progress(); else -> 0f }
+            for (d in 0 until dots) {
+                val on = (d + 0.5f) / dots <= lit
+                drawCircle(if (on) Dot.White else Dot.Faint, 1.4.dp.toPx(), Offset(i * (segment + gap) + d * step + step / 2, size.height / 2))
             }
         }
     }

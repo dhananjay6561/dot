@@ -227,6 +227,38 @@ See the [full release notes](https://github.com/dhananjay6561/dot/releases/tag/v
 <td align="center"><img src="docs/screenshots/bedside.webp" width="200" alt="Bedside clock"><br><sub>Bedside clock</sub></td></tr>
 </table>
 
+## FAQ
+
+### Is Dot free?
+Yes. Dot is free and open source under the Apache 2.0 license, with no ads, no in-app purchases and no account.
+
+### Does Dot need an internet connection?
+No. Dot has no internet permission, so it cannot connect to the network at all. It plays music files that are already on your phone.
+
+### Does Dot work on phones that aren't made by Nothing?
+Yes. Dot runs on any Android phone with Android 10 or newer. Only the Glyph light features need a Nothing Phone (4a); everything else, including the Nothing-style design, works everywhere.
+
+### How do I make the Nothing Glyph lights react to music?
+Open Now Playing, tap the Visuals button (the dotted bars at the top) and pick a Glyph mode: **Meter** climbs with the bass, **Pulse** flashes on every beat and **Progress** fills as the song plays. You can also set it from Settings.
+
+### Which audio formats does Dot play?
+MP3, AAC, FLAC, ALAC, WAV, Opus and Vorbis. Lossless files play untouched, and surround files skip the effects chain instead of failing.
+
+### Does Dot show synced lyrics?
+Yes. Dot reads synced `.lrc` files and lyrics embedded in ID3 or Vorbis tags, and fills the current line left to right as it is sung, karaoke style. Pick your lyrics folders under **Settings → Lyrics folders**.
+
+### Does Dot have an equalizer?
+Yes, its own: a 10-band equalizer from 31 Hz to 16 kHz with nine presets, eight one-tap sound modes, bass boost, stereo widening, reverb, volume levelling and a limiter that stops boosted sound from crackling. It sounds the same on every phone because it doesn't rely on the phone's built-in effects.
+
+### Can Dot stream from Spotify or YouTube Music?
+No. Dot is a player for local music files only, by design.
+
+### How do I move my playlists and stats to a new phone?
+Use **Settings → Back up** on the old phone and **Settings → Restore** on the new one. Songs are matched by file path first and then by title and artist, so playlists, favourites, play counts and learned tempos carry over.
+
+### How big is Dot?
+About a 3.8 MB download. Release builds are shrunk with R8 and ship only English resources and the code the app uses.
+
 ## Architecture
 
 Dot is a single-module app in four layers. Data flows up as `StateFlow`; commands flow down as plain method calls on a few app-wide singletons created in `DotApp`.

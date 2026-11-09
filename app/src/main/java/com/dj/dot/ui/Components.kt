@@ -70,6 +70,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -461,6 +462,35 @@ object ArtLoader {
                 ?: run { missing += key; null }
         }
     }
+}
+
+/**
+ * The cover's average colour, lifted so it can glow on black. Null while loading, for songs without
+ * a cover, and for near-grey covers, which would only glow a muddy grey.
+ */
+@Composable
+fun rememberArtTint(song: Song?): Color? {
+    val context = LocalContext.current
+    val key = song?.let { "${it.albumId}_192" }
+    var tint by remember(key) { mutableStateOf<Color?>(null) }
+    LaunchedEffect(key) {
+        if (song == null || key == null) return@LaunchedEffect
+        val cover = ArtLoader.load(context, song, key, 192) ?: return@LaunchedEffect
+        tint = withContext(Dispatchers.Default) { glowOf(cover) }
+    }
+    return tint
+}
+
+private fun glowOf(cover: ImageBitmap): Color? {
+    // Thumbnails can come back as hardware bitmaps, which can't be read pixel by pixel.
+    val source = cover.asAndroidBitmap().let { if (it.config == android.graphics.Bitmap.Config.HARDWARE) it.copy(android.graphics.Bitmap.Config.ARGB_8888, false) else it }
+    val pixel = android.graphics.Bitmap.createScaledBitmap(source, 1, 1, true).getPixel(0, 0)
+    val hsv = FloatArray(3)
+    android.graphics.Color.colorToHSV(pixel, hsv)
+    if (hsv[1] < 0.15f) return null
+    hsv[1] = (hsv[1] * 1.15f).coerceAtMost(1f)
+    hsv[2] = hsv[2].coerceAtLeast(0.7f)
+    return Color(android.graphics.Color.HSVToColor(hsv))
 }
 
 @Composable

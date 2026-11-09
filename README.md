@@ -42,7 +42,8 @@ Most Nothing-styled players restyle a regular player. Dot is built around Nothin
 - **It shows the music.** Dot art, Halo and a scratchable Vinyl cover, Grid, Mirror and Wave visualizers, and a Party mode that builds its landscape from the song itself.
 - **Transitions feel mixed, not cut.** Crossfades start on the beat.
 - **Every detail is dot matrix.** Dot sliders, an analog sleep dial, karaoke lyrics and a bedside clock, all in Nothing's black, white and red.
-- **It knows how you listen.** Wrapped stats, mood mixes that learn each song's tempo, and gestures.
+- **It knows how you listen.** A Now page with what's next, your mood mixes and your most played songs, mixes that learn each song's tempo, and Wrapped stats told as tap-through stories.
+- **It moves like one piece.** The cover grows out of the mini player into Now Playing, the screen glows in the cover's colour, and the play button pulses on the beat.
 
 All of it in a **3.8 MB download**, fully offline, with no accounts and no internet permission.
 

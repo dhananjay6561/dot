@@ -189,7 +189,7 @@ private fun SummaryCard(stats: WrappedStats) {
         Spacer(Modifier.height(16.dp))
         Row {
             StatBlock("Songs played", stats.songsHeard.toString(), Modifier.weight(1f))
-            StatBlock("Day streak", if (stats.streak > 0) "${stats.streak} days" else "—", Modifier.weight(1f))
+            StatBlock("Day streak", if (stats.streak > 0) countOf(stats.streak, "day") else "—", Modifier.weight(1f))
         }
         Spacer(Modifier.height(22.dp))
         Row(

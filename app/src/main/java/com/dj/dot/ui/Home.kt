@@ -281,8 +281,8 @@ fun ListRow(title: String, subtitle: String, onClick: () -> Unit, leading: @Comp
 
 @Composable
 fun IconTile(icon: ImageVector?, red: Boolean = false, text: String = "") {
-    Box(Modifier.size(52.dp).clip(RoundedCornerShape(12.dp)).background(if (red) Dot.Red else Dot.Surface2), contentAlignment = Alignment.Center) {
-        if (icon != null) Icon(icon, null, tint = Dot.White, modifier = Modifier.size(24.dp))
+    Box(Modifier.size(52.dp).clip(RoundedCornerShape(12.dp)).background(Dot.Surface2), contentAlignment = Alignment.Center) {
+        if (icon != null) Icon(icon, null, tint = if (red) Dot.Red else Dot.White, modifier = Modifier.size(24.dp))
         else DotTitle(text, size = 22.sp)
     }
 }

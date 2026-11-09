@@ -572,7 +572,7 @@ Checks that CI runs on every push and pull request:
 ./gradlew installDebug
 ```
 
-`installRelease` works once release signing is set up. Or copy the APK to the phone and open it, allowing installs from that source when asked.
+Debug builds install as a separate app, `com.dj.dot.debug`, next to a release install, so testing never touches your real library or stats. `installRelease` works once release signing is set up. Or copy the APK to the phone and open it, allowing installs from that source when asked.
 
 ### Recommended on first launch
 

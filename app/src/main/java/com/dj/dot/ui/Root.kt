@@ -198,8 +198,9 @@ private fun MainUi() {
 
                     AnimatedVisibility(
                         visible = app.nowPlaying && state.current != null,
-                        enter = slideInVertically(tween(320)) { it },
-                        exit = slideOutVertically(tween(260)) { it },
+                        // A short lift and fade, so the cover growing out of the mini player leads the motion.
+                        enter = fadeIn(tween(220)) + slideInVertically(tween(320)) { it / 10 },
+                        exit = fadeOut(tween(200)) + slideOutVertically(tween(260)) { it / 10 },
                     ) {
                         CompositionLocalProvider(LocalNowPlayingVisibility provides this) {
                             NowPlayingScreen(onClose = { app.nowPlaying = false })

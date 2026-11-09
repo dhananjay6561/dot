@@ -49,9 +49,22 @@ All of it in a **3.8 MB download**, fully offline, with no accounts and no inter
 
 ## Download
 
-Grab **`Dot-1.2.1.apk`** from the [latest release](https://github.com/dhananjay6561/dot/releases/latest), open it on your phone and allow installing from that source. Android 10 or newer.
+Grab **`Dot-1.3.0.apk`** from the [latest release](https://github.com/dhananjay6561/dot/releases/latest), open it on your phone and allow installing from that source. Android 10 or newer.
 
-> **Coming from 1.0 or 1.1?** From 1.2.0 Dot is signed with its own release key, so it can't update the older build in place. Back up first (**Settings → Back up**), uninstall the old Dot, install 1.2.1, then **Settings → Restore**. Later updates install in place again.
+> **Coming from 1.2.x?** 1.3.0 installs over it in place and keeps your playlists, favourites and stats.
+>
+> **Coming from 1.0 or 1.1?** From 1.2.0 Dot is signed with its own release key, so it can't update the older build in place. Back up first (**Settings → Back up**), uninstall the old Dot, install 1.3.0, then **Settings → Restore**. Later updates install in place again.
+
+## What's new in 1.3.0
+
+- **A Now page** opens the library: up next from your queue, your Chill, Groove and Hype mixes, most played, recently added and your Wrapped minutes.
+- **Now Playing reacts to the song.** A dotted glow in the cover's colour, a play button that pulses on the beat, and a live mirror of the Glyph lights under the visualizer.
+- **Smoother motion.** The cover grows out of the mini player, screens settle in on a spring, one indicator slides between the library tabs, and taps on play, like, tabs and the queue get a haptic tick.
+- **Wrapped as stories.** Tap through your minutes, top artist, top song, listening clock and listener type, then share the summary card.
+- **Cleaner library.** Songs without a cover get their own dot pattern, titles that start with a number sort after the alphabet, and counts read "1 song" instead of "1 songs".
+- **Calmer colour.** Red now marks only what's live, like the playing song and the seek head; switches and controls are white, and the playlist and Now Playing icons are drawn in dots.
+
+See the [full release notes](https://github.com/dhananjay6561/dot/releases/tag/v1.3.0).
 
 
 ## Features

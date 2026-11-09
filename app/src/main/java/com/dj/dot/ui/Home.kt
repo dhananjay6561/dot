@@ -262,9 +262,9 @@ private fun PlaylistsTab() {
         item { ListRow("Recently added", "Latest 100", { app.push(Screen.Playlist(SMART_RECENT)) }) { IconTile(DotIcons.Recent) } }
         item { ListRow("Most played", "Your top 100", { app.push(Screen.Playlist(SMART_TOP)) }) { IconTile(DotIcons.Top) } }
         item { Label("Mood mixes · learned as you listen", Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp)) }
-        item { ListRow("Chill", "${moods[SMART_CHILL] ?: 0} songs · slow and easy", { app.push(Screen.Playlist(SMART_CHILL)) }) { IconTile(DotIcons.Chill) } }
-        item { ListRow("Groove", "${moods[SMART_GROOVE] ?: 0} songs · steady mid-tempo", { app.push(Screen.Playlist(SMART_GROOVE)) }) { IconTile(DotIcons.Groove) } }
-        item { ListRow("Hype", "${moods[SMART_HYPE] ?: 0} songs · fast and loud", { app.push(Screen.Playlist(SMART_HYPE)) }) { IconTile(DotIcons.Hype, red = true) } }
+        item { ListRow("Chill", moodLine(moods[SMART_CHILL] ?: 0, "slow and easy", "slow"), { app.push(Screen.Playlist(SMART_CHILL)) }) { IconTile(DotIcons.Chill) } }
+        item { ListRow("Groove", moodLine(moods[SMART_GROOVE] ?: 0, "steady mid-tempo", "mid-tempo"), { app.push(Screen.Playlist(SMART_GROOVE)) }) { IconTile(DotIcons.Groove) } }
+        item { ListRow("Hype", moodLine(moods[SMART_HYPE] ?: 0, "fast and loud", "fast"), { app.push(Screen.Playlist(SMART_HYPE)) }) { IconTile(DotIcons.Hype, red = true) } }
         if (playlists.isNotEmpty()) item { Label("Your playlists", Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp)) }
         items(playlists, key = { it.id }) { p ->
             ListRow(p.name, countOf(p.songIds.size, "song"), { app.push(Screen.Playlist(p.id)) }) { IconTile(null, text = p.name.take(1)) }
@@ -279,6 +279,10 @@ const val SMART_TOP = "smart:top"
 const val SMART_CHILL = "smart:chill"
 const val SMART_GROOVE = "smart:groove"
 const val SMART_HYPE = "smart:hype"
+
+/** A mood mix's subtitle: its size and feel, or what to play while it's still empty. */
+private fun moodLine(count: Int, feel: String, pace: String) =
+    if (count == 0) "Still learning · play a few $pace ones" else "${countOf(count, "song")} · $feel"
 
 /** Tempo bands for the mood mixes. */
 fun moodOf(bpm: Int): String = when {

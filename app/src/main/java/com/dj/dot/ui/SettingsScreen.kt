@@ -594,7 +594,7 @@ private fun PickerRow(title: String, subtitle: String, options: List<String>, se
 
 @Composable
 private fun Section(title: String) {
-    Label(title, Modifier.padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 4.dp), color = Dot.Red)
+    Label(title, Modifier.padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 4.dp))
 }
 
 @Composable

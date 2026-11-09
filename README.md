@@ -21,12 +21,17 @@
 
 Dot plays the music that lives on your phone. No accounts, no streaming, no ads, no network calls.
 
-| | Size |
-| --- | --- |
-| Download | **3.8 MB** |
-| Installed | **3.9 MB** |
+### At a glance
 
-For comparison, most streaming music apps install at well over 100 MB.
+| | |
+| --- | --- |
+| What it is | An offline music player for local files (MP3, FLAC, ALAC, WAV, AAC, Opus, Vorbis) |
+| Price | Free, no ads, no in-app purchases |
+| License | Open source, Apache 2.0 |
+| Works on | Any Android phone with Android 10 or newer; Glyph lights on the Nothing Phone (4a) |
+| Internet | None. Dot has no internet permission at all |
+| Download size | **3.8 MB** (most streaming music apps install at well over 100 MB) |
+| Latest version | 1.3.0, from [GitHub Releases](https://github.com/dhananjay6561/dot/releases/latest) |
 
 ## Why Dot
 

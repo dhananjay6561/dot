@@ -1,11 +1,11 @@
-# Dot
+# Dot: offline music player for Nothing Phone and Android
 
 [![Build](https://github.com/dhananjay6561/dot/actions/workflows/build.yml/badge.svg?branch=main&event=push)](https://github.com/dhananjay6561/dot/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/dhananjay6561/dot?color=D71921&label=release)](https://github.com/dhananjay6561/dot/releases/latest)
 [![License](https://img.shields.io/github/license/dhananjay6561/dot?color=111111)](LICENSE)
 ![Android 10+](https://img.shields.io/badge/Android-10%2B-111111)
 
-An offline music player for Android, designed around the Nothing OS look: pure black, dot-matrix type, a single red accent. Built for the Nothing Phone (4a), and it runs on any phone with Android 10 or newer. On Nothing phones it also drives the Glyph lights on the back.
+**Dot is a free, open-source offline music player for Android**, designed around the Nothing OS look: pure black, dot-matrix type and a single red accent. It plays the music files already on your phone, with crossfade, a 10-band equalizer, synced karaoke lyrics and beat-reactive visuals. Built for the Nothing Phone (4a), it runs on any phone with Android 10 or newer, and on Nothing phones it also drives the Glyph lights on the back in time with the music.
 
 <p align="center">
   <img src="docs/demo/dot-demo.webp" width="800" alt="Dot demo: the library, Dot art, Halo and Vinyl covers, visualizers, the Visuals panel, the sleep dial and Party mode">

@@ -42,6 +42,89 @@ object DotIcons {
         "X.X.X.X.X",
         "X.X.X.X.X",
     )
+
+    val Heart = DotGlyph(
+        ".XX...XX.",
+        "XXXX.XXXX",
+        "XXXXXXXXX",
+        "XXXXXXXXX",
+        ".XXXXXXX.",
+        "..XXXXX..",
+        "...XXX...",
+        "....X....",
+    )
+
+    /** A clock face: Recently added. */
+    val Recent = DotGlyph(
+        "..XXXXX..",
+        ".X.....X.",
+        "X...X...X",
+        "X...X...X",
+        "X...XXX.X",
+        "X.......X",
+        "X.......X",
+        ".X.....X.",
+        "..XXXXX..",
+    )
+
+    /** An arrow up: Most played. */
+    val Top = DotGlyph(
+        "....X....",
+        "...XXX...",
+        "..X.X.X..",
+        ".X..X..X.",
+        "....X....",
+        "....X....",
+        "....X....",
+        "....X....",
+    )
+
+    /** A crescent moon: the Chill mix. */
+    val Chill = DotGlyph(
+        "...XXXX..",
+        ".XXXX....",
+        "XXXX.....",
+        "XXX......",
+        "XXX......",
+        "XXXX....X",
+        ".XXXXXXX.",
+        "..XXXXX..",
+    )
+
+    /** A symmetric waveform: the Groove mix. */
+    val Groove = DotGlyph(
+        "....X....",
+        "..X.X....",
+        "..X.X.X..",
+        "X.X.X.X.X",
+        "X.X.X.X.X",
+        "X.X.X.X.X",
+        "..X.X.X..",
+        "..X.X....",
+        "....X....",
+    )
+
+    /** A lightning bolt: the Hype mix. */
+    val Hype = DotGlyph(
+        "....XXX..",
+        "...XXX...",
+        "..XXX....",
+        ".XXXXXXX.",
+        "....XXX..",
+        "...XXX...",
+        "..XX.....",
+        ".X.......",
+    )
+
+    val Folder = DotGlyph(
+        "XXX......",
+        "X..X.....",
+        "XXXXXXXXX",
+        "X.......X",
+        "X.......X",
+        "X.......X",
+        "XXXXXXXXX",
+    )
 }
 
 @Composable

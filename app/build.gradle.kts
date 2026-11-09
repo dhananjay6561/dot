@@ -49,6 +49,10 @@ android {
     }
 
     buildTypes {
+        // A separate package, so a test build installs next to the release-signed app and keeps its data.
+        debug {
+            applicationIdSuffix = ".debug"
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true

@@ -149,7 +149,7 @@ private fun SongsTab() {
             LazyColumn(Modifier.fillMaxSize(), state = listState, contentPadding = PaddingValues(bottom = 16.dp)) {
                 item(key = "header") {
                     Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Label("${songs.size} songs", Modifier.weight(1f))
+                        Label(countOf(songs.size, "song"), Modifier.weight(1f))
                         Pill(sortNames[sort], { dot.settings.songSort.set((sort + 1) % sortNames.size) })
                         Spacer(Modifier.width(8.dp))
                         Pill("Shuffle", { dot.engine.playSongs(songs, shuffleAll = true) }, accent = true, icon = Icons.Rounded.Shuffle)
@@ -216,7 +216,7 @@ private fun ArtistsTab() {
             items(lib.artists, key = { it.name }) { artist ->
                 ListRow(
                     title = artist.name,
-                    subtitle = "${artist.songs.size} songs · ${artist.albumCount} albums",
+                    subtitle = "${countOf(artist.songs.size, "song")} · ${countOf(artist.albumCount, "album")}",
                     onClick = { app.push(Screen.Artist(artist.name)) },
                 ) { Art(artist.songs.first(), Modifier.size(52.dp), px = 156, shape = CircleShape) }
             }
@@ -234,7 +234,7 @@ private fun FoldersTab() {
         items(lib.folders, key = { it.path }) { folder ->
             ListRow(
                 title = folder.name,
-                subtitle = "${folder.songs.size} songs · ${folder.path.removePrefix("/storage/emulated/0")}",
+                subtitle = "${countOf(folder.songs.size, "song")} · ${folder.path.removePrefix("/storage/emulated/0")}",
                 onClick = { app.push(Screen.Folder(folder.path)) },
             ) { IconTile(DotIcons.Folder) }
         }
@@ -258,7 +258,7 @@ private fun PlaylistsTab() {
                 Pill("New playlist", { creating = true }, accent = true, icon = Icons.Rounded.Add)
             }
         }
-        item { ListRow("Favourites", "${favs.size} songs", { app.push(Screen.Playlist(SMART_FAVOURITES)) }) { IconTile(DotIcons.Heart, red = true) } }
+        item { ListRow("Favourites", countOf(favs.size, "song"), { app.push(Screen.Playlist(SMART_FAVOURITES)) }) { IconTile(DotIcons.Heart, red = true) } }
         item { ListRow("Recently added", "Latest 100", { app.push(Screen.Playlist(SMART_RECENT)) }) { IconTile(DotIcons.Recent) } }
         item { ListRow("Most played", "Your top 100", { app.push(Screen.Playlist(SMART_TOP)) }) { IconTile(DotIcons.Top) } }
         item { Label("Mood mixes · learned as you listen", Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp)) }
@@ -267,7 +267,7 @@ private fun PlaylistsTab() {
         item { ListRow("Hype", "${moods[SMART_HYPE] ?: 0} songs · fast and loud", { app.push(Screen.Playlist(SMART_HYPE)) }) { IconTile(DotIcons.Hype, red = true) } }
         if (playlists.isNotEmpty()) item { Label("Your playlists", Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp)) }
         items(playlists, key = { it.id }) { p ->
-            ListRow(p.name, "${p.songIds.size} songs", { app.push(Screen.Playlist(p.id)) }) { IconTile(null, text = p.name.take(1)) }
+            ListRow(p.name, countOf(p.songIds.size, "song"), { app.push(Screen.Playlist(p.id)) }) { IconTile(null, text = p.name.take(1)) }
         }
     }
     if (creating) NameDialog("New playlist", "", onDismiss = { creating = false }) { dot.store.create(it); creating = false }

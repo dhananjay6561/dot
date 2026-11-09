@@ -71,6 +71,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.core.graphics.get
+import androidx.core.graphics.scale
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -484,7 +486,7 @@ fun rememberArtTint(song: Song?): Color? {
 private fun glowOf(cover: ImageBitmap): Color? {
     // Thumbnails can come back as hardware bitmaps, which can't be read pixel by pixel.
     val source = cover.asAndroidBitmap().let { if (it.config == android.graphics.Bitmap.Config.HARDWARE) it.copy(android.graphics.Bitmap.Config.ARGB_8888, false) else it }
-    val pixel = android.graphics.Bitmap.createScaledBitmap(source, 1, 1, true).getPixel(0, 0)
+    val pixel = source.scale(1, 1)[0, 0]
     val hsv = FloatArray(3)
     android.graphics.Color.colorToHSV(pixel, hsv)
     if (hsv[1] < 0.15f) return null

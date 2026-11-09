@@ -199,6 +199,8 @@ fun NowPlayingScreen(onClose: () -> Unit) {
                 Box(
                     Modifier
                         .size(78.dp)
+                        // Breathes a little on each beat; read in the layer so only this layer redraws.
+                        .graphicsLayer { val beat = 1f + 0.06f * (viz?.pulse ?: 0f); scaleX = beat; scaleY = beat }
                         .pressable(playInteraction, 0.9f)
                         .clip(CircleShape)
                         .background(Dot.White)

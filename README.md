@@ -461,7 +461,9 @@ Dot is built to stay light on battery and memory:
 - Listening stats are written once a minute and on pause, not continuously.
 - The library opens from a cached index and only rescans when MediaStore's change counter moves.
 - Album art comes from `ContentResolver.loadThumbnail` with an in-memory LRU cache, with no image library.
-- Only the parts that change every frame update: the seek bar, the lyric fill and the beat dot repaint without rebuilding the screen.
+- Only the parts that change every frame update: the seek bar, the lyric fill, the beat dot, the play button's beat pulse and the sliding tab indicator repaint without rebuilding the screen.
+- Now Playing runs one beat analyser for the cover, the strip and the play button, and only while the cover is showing.
+- The cover glow colour is read once per album from a small thumbnail, off the main thread; its dot positions are worked out once per screen size, so a new song only repaints them.
 - The current lyric line is found by binary search; queue edits change the list in place instead of rebuilding it.
 - Analyser frame lookups walk back from the newest frame and beat statistics are kept as running sums.
 - Search is debounced and matched off the main thread.

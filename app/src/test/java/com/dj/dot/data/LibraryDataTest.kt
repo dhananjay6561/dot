@@ -12,6 +12,11 @@ class LibraryDataTest {
         assertEquals(listOf("ae dil hai mushkil", "Chaleya", "295", "4"), lib.songs.map { it.title })
     }
 
+    @Test fun `lists numbered albums after the alphabet`() {
+        val lib = LibraryData.build(listOf(song(1, "4").copy(album = "295"), song(2, "Chaleya").copy(album = "Jawan")))
+        assertEquals(listOf("Jawan", "295"), lib.albums.map { it.title })
+    }
+
     @Test fun `ignores leading spaces when grouping`() {
         assertEquals(true, LibraryData.startsWithLetter("  Zara"))
         assertEquals(false, LibraryData.startsWithLetter(" 7"))

@@ -30,11 +30,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.Text
-import androidx.compose.material.icons.rounded.Insights
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,9 +65,9 @@ fun HomeScreen() {
                 DotTitle("Dot", size = 40.sp)
                 Box(Modifier.padding(start = 4.dp, bottom = 11.dp).size(8.dp).clip(CircleShape).background(Dot.Red))
             }
-            IconBtn(Icons.Rounded.Insights, { app.push(Screen.Wrapped) })
-            IconBtn(Icons.Rounded.Search, { app.push(Screen.Search) })
-            IconBtn(Icons.Rounded.Settings, { app.push(Screen.Settings) })
+            DotIconBtn(DotIcons.Wrapped, { app.push(Screen.Wrapped) }, size = 22.dp)
+            DotIconBtn(DotIcons.Search, { app.push(Screen.Search) }, size = 22.dp)
+            DotIconBtn(DotIcons.Settings, { app.push(Screen.Settings) }, size = 22.dp)
         }
         LazyRow(
             contentPadding = PaddingValues(horizontal = 20.dp),

@@ -33,6 +33,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,7 +70,11 @@ fun HomeScreen() {
             DotIconBtn(DotIcons.Search, { app.push(Screen.Search) }, size = 22.dp)
             DotIconBtn(DotIcons.Settings, { app.push(Screen.Settings) }, size = 22.dp)
         }
+        val tabRow = rememberLazyListState()
+        // Five pills don't fit a narrow phone, so keep the selected one and its neighbour in view.
+        LaunchedEffect(pager.currentPage) { tabRow.animateScrollToItem((pager.currentPage - 1).coerceAtLeast(0)) }
         LazyRow(
+            state = tabRow,
             contentPadding = PaddingValues(horizontal = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.padding(bottom = 8.dp),

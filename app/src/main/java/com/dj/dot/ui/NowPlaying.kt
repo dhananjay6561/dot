@@ -73,6 +73,11 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PointMode
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -109,11 +114,15 @@ fun NowPlayingScreen(onClose: () -> Unit) {
     // It only runs while the art is showing, as before, so lyrics and the queue don't keep the FFT busy.
     val needsAnalysis = showViz || artStyle == ArtStyle.DotArt || artStyle == ArtStyle.Halo
     val viz = if (panel == Panel.Art && needsAnalysis) rememberVizState(engine.spectrum, state.playing) else null
+    val tint = rememberArtTint(song)
+    val glow by androidx.compose.animation.animateColorAsState(tint ?: Color.Transparent, tween(700), label = "glow")
+    val wide = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     Column(
         Modifier
             .fillMaxSize()
             .background(Dot.Black)
+            .dotGlow(if (wide) Offset(0.25f, 0.5f) else Offset(0.5f, 0.3f)) { glow }
             .pointerInput(Unit) {
                 detectVerticalDragGestures(
                     // Down closes the player, up opens the queue.
@@ -323,6 +332,36 @@ private fun ArtPanel(song: com.dj.dot.data.Song, playing: Boolean, showViz: Bool
                         }
                     },
             )
+        }
+    }
+}
+
+/**
+ * A halftone glow in the cover's colour behind the art, its dots shrinking and fading ring by ring.
+ * Dot positions are worked out once per size; a colour change only redraws.
+ */
+private fun Modifier.dotGlow(centre: Offset, color: () -> Color): Modifier = drawWithCache {
+    val step = 14.dp.toPx()
+    val origin = Offset(size.width * centre.x, size.height * centre.y)
+    val reach = size.minDimension * 0.95f
+    val rings = 6
+    val buckets = List(rings) { ArrayList<Offset>() }
+    var y = step / 2
+    while (y < size.height) {
+        var x = step / 2
+        while (x < size.width) {
+            val d = (Offset(x, y) - origin).getDistance() / reach
+            if (d < 1f) buckets[(d * rings).toInt()].add(Offset(x, y))
+            x += step
+        }
+        y += step
+    }
+    onDrawBehind {
+        val c = color()
+        if (c.alpha == 0f) return@onDrawBehind
+        buckets.forEachIndexed { i, points ->
+            val near = 1f - i / rings.toFloat()
+            drawPoints(points, PointMode.Points, c.copy(alpha = c.alpha * 0.2f * near * near), strokeWidth = step * (0.16f + 0.24f * near), cap = StrokeCap.Round)
         }
     }
 }

@@ -185,13 +185,17 @@ fun NowPlayingScreen(onClose: () -> Unit) {
                 ToggleIcon(Icons.Rounded.Shuffle, state.shuffle, engine::toggleShuffle)
                 IconBtn(Icons.Rounded.SkipPrevious, engine::previous, size = 34.dp)
                 val playInteraction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
                 Box(
                     Modifier
                         .size(78.dp)
                         .pressable(playInteraction, 0.9f)
                         .clip(CircleShape)
                         .background(Dot.White)
-                        .clickable(playInteraction, androidx.compose.material3.ripple(color = Dot.Black), onClick = engine::toggle),
+                        .clickable(playInteraction, androidx.compose.material3.ripple(color = Dot.Black)) {
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.ContextClick)
+                            engine.toggle()
+                        },
                     contentAlignment = Alignment.Center,
                 ) {
                     AnimatedIcon(if (state.playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, Dot.Black, 38.dp)

@@ -159,6 +159,7 @@ fun NowPlayingScreen(onClose: () -> Unit) {
                     earphones?.battery?.let { Box(Modifier.padding(top = 6.dp)) { Chip("Earbuds $it%", red = it <= 20) } }
                 }
                 val fav = song.id in favs
+                val likeHaptic = androidx.compose.ui.platform.LocalHapticFeedback.current
                 // Liking pops the heart; unliking just morphs back.
                 val pop = remember { androidx.compose.animation.core.Animatable(1f) }
                 var lastFav by remember(song.id) { mutableStateOf(fav) }
@@ -171,7 +172,10 @@ fun NowPlayingScreen(onClose: () -> Unit) {
                 }
                 IconBtn(
                     if (fav) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                    { dot.store.toggleFavourite(song.id) },
+                    {
+                        likeHaptic.performHapticFeedback(if (fav) androidx.compose.ui.hapticfeedback.HapticFeedbackType.ToggleOff else androidx.compose.ui.hapticfeedback.HapticFeedbackType.ToggleOn)
+                        dot.store.toggleFavourite(song.id)
+                    },
                     Modifier.graphicsLayer { scaleX = pop.value; scaleY = pop.value },
                     tint = if (fav) Dot.Red else Dot.White,
                 )

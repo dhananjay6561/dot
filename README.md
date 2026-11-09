@@ -104,6 +104,8 @@ See the [full release notes](https://github.com/dhananjay6561/dot/releases/tag/v
   - **Vinyl:** a spinning record at 33⅓ RPM with dotted grooves and a tonearm that tracks progress; grab it to scratch through the song
 - Three visualizer styles, switched by tapping the strip: **Grid**, **Mirror** and **Wave**
 - Real-time beat detection with a live BPM readout
+- Now Playing glows in the cover's colour: a dotted halo, picked once per album, that fades ring by ring and crossfades between songs
+- The play button pulses gently on every beat
 - A Visuals panel with live previews of every style, rendered from the song that's playing
 - **Party mode:** a full-screen landscape scene in dots: a red sun on the horizon, a spectrum skyline, a floor that rushes towards you at the song's tempo, and sparks on every beat
 - **Bedside clock:** a big dot-matrix clock with what's playing; opens by itself on the charger after a minute untouched, dims, and shifts slightly so the OLED never burns in
@@ -113,7 +115,7 @@ See the [full release notes](https://github.com/dhananjay6561/dot/releases/tag/v
   - **Meter:** the six LEDs climb with the bass, with smooth per-LED brightness
   - **Pulse:** the whole strip flashes on every beat
   - **Progress:** the strip fills as the song plays
-- Brightness, sensitivity and beat-flash controls, with a live on-screen mirror of the strip
+- Brightness, sensitivity and beat-flash controls, with a live on-screen mirror of the strip in the Visuals panel and under the visualizer on Now Playing
 - Controlled from the Glyph button on Now Playing or from Settings
 
 **Lyrics**

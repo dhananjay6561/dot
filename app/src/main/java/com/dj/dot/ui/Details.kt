@@ -87,7 +87,12 @@ fun PlaylistScreen(id: String) {
             val tempo by dot.store.bpm.collectAsStateWithLifecycle()
             val songs = remember(lib, tempo) { moodSongs(lib, tempo, id) }
             val name = when (id) { SMART_CHILL -> "Chill"; SMART_GROOVE -> "Groove"; else -> "Hype" }
-            SongListScreen(name, "${countOf(songs.size, "song")} · grows as Dot learns your music", songs, cover = songs.firstOrNull())
+            val pace = when (id) { SMART_CHILL -> "slow"; SMART_GROOVE -> "mid-tempo"; else -> "fast" }
+            SongListScreen(
+                name, "${countOf(songs.size, "song")} · grows as Dot learns your music", songs, cover = songs.firstOrNull(),
+                emptyTitle = "Still learning",
+                emptyHint = "Dot learns each song's tempo the first time it plays. Play a few $pace ones and they'll gather here.",
+            )
         }
         else -> {
             val playlist = playlists.firstOrNull { it.id == id } ?: return Missing()
@@ -136,6 +141,8 @@ private fun SongListScreen(
     cover: Song?,
     coverShape: Shape = RoundedCornerShape(20.dp),
     trackNumbers: Boolean = false,
+    emptyTitle: String = "Empty",
+    emptyHint: String = "Add songs from any list using the ⋮ menu.",
     playlistId: String? = null,
     playlistIndex: (Int) -> Int = { it },
     actions: @Composable () -> Unit = {},
@@ -165,7 +172,7 @@ private fun SongListScreen(
                 Spacer(Modifier.height(6.dp))
             }
         }
-        if (songs.isEmpty()) item { EmptyState("Empty", "Add songs from any list using the ⋮ menu.") }
+        if (songs.isEmpty()) item { EmptyState(emptyTitle, emptyHint) }
         itemsIndexed(songs, key = { i, s -> "$i-${s.id}" }) { i, s ->
             SongRow(
                 s, s.id == currentId,

@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalContext
@@ -130,32 +131,39 @@ fun WrappedScreen() {
         context.startActivity(Intent.createChooser(send, "Share your Dot Wrapped"))
     }
 
+    WrappedList(stats, shareLayer, onShare = { share() }, onBack = app::pop)
+}
+
+/** Every stat on one scrolling page, with the shareable summary card on top. */
+@Composable
+private fun WrappedList(stats: WrappedStats, shareLayer: GraphicsLayer, onShare: () -> Unit, onBack: () -> Unit) {
     LazyColumn(Modifier.fillMaxSize().statusBarsPadding(), contentPadding = PaddingValues(bottom = 32.dp)) {
         item {
-            TopBar("Wrapped", app::pop) {
-                if (stats.totalMinutes > 0) IconBtn(Icons.Rounded.Share, ::share, size = 22.dp)
+            TopBar("Wrapped", onBack) {
+                if (stats.totalMinutes > 0) IconBtn(Icons.Rounded.Share, onShare, size = 22.dp)
             }
         }
         if (stats.totalMinutes < 1) {
             item { EmptyState("Warming up", "Play some music. Your stats build up as you listen.") }
             return@LazyColumn
         }
-        item {
-            // This card is what gets shared, so it is drawn into a layer we can snapshot.
-            Box(
-                Modifier
-                    .padding(horizontal = 20.dp, vertical = 8.dp)
-                    .drawWithContent {
-                        shareLayer.record { this@drawWithContent.drawContent() }
-                        drawLayer(shareLayer)
-                    },
-            ) { SummaryCard(stats) }
-        }
+        item { ShareableSummary(stats, shareLayer, Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) }
         item { SectionCard("Top artists") { stats.topArtists.forEachIndexed { i, (name, song, ms) -> RankRow(i + 1, name, "${ms / 60_000} min", song, round = true) } } }
         item { SectionCard("Top songs") { stats.topSongs.forEachIndexed { i, (song, ms) -> RankRow(i + 1, song.title, "${song.artist} · ${ms / 60_000} min", song) } } }
         item { SectionCard("Your listening clock") { ClockChart(stats.hours) } }
         item { SectionCard("Last 7 days") { WeekChart(stats.week) } }
     }
+}
+
+/** The summary card, drawn into a layer so it can be snapshotted and shared as an image. */
+@Composable
+private fun ShareableSummary(stats: WrappedStats, shareLayer: GraphicsLayer, modifier: Modifier = Modifier) {
+    Box(
+        modifier.drawWithContent {
+            shareLayer.record { this@drawWithContent.drawContent() }
+            drawLayer(shareLayer)
+        },
+    ) { SummaryCard(stats) }
 }
 
 @Composable

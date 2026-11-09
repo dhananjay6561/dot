@@ -338,7 +338,7 @@ private fun StoryCard(story: Story, stats: WrappedStats, shareLayer: GraphicsLay
                 val since = SimpleDateFormat("d MMM", Locale.getDefault()).format(Date(stats.since))
                 Label("Since $since you've played", color = Dot.White)
                 Spacer(Modifier.height(16.dp))
-                DotTitle(NumberFormat.getIntegerInstance().format(stats.totalMinutes), size = 96.sp, align = TextAlign.Center)
+                CountUp(stats.totalMinutes)
                 Label("minutes of music, all of it offline", align = TextAlign.Center)
             }
             Story.Artist -> stats.topArtists.firstOrNull()?.let { (name, song, ms) ->
@@ -395,6 +395,14 @@ private fun StoryCard(story: Story, stats: WrappedStats, shareLayer: GraphicsLay
 }
 
 private const val STORY_MS = 5_000
+
+/** A big dot-matrix number that counts up from zero when it appears. */
+@Composable
+private fun CountUp(target: Long) {
+    val shown = remember { Animatable(0f) }
+    LaunchedEffect(target) { shown.animateTo(target.toFloat(), tween(1_400, easing = androidx.compose.animation.core.FastOutSlowInEasing)) }
+    DotTitle(NumberFormat.getIntegerInstance().format(shown.value.toLong()), size = 96.sp, align = TextAlign.Center)
+}
 
 /**
  * Wrapped as tap-through stories: tap the right of the screen for the next card, the left for the

@@ -103,6 +103,12 @@ fun NowPlayingScreen(onClose: () -> Unit) {
     var visualsSheet by remember { mutableStateOf(false) }
     val glyphMode by dot.settings.glyphMode.flow.collectAsStateWithLifecycle()
     var pullDown by remember { mutableFloatStateOf(0f) }
+    val artStyleIndex by dot.settings.artStyle.flow.collectAsStateWithLifecycle()
+    val artStyle = ArtStyle.entries[artStyleIndex.coerceIn(0, ArtStyle.entries.lastIndex)]
+    // One analyser for the whole screen, so the cover, the strip and the controls share a beat.
+    // It only runs while the art is showing, as before, so lyrics and the queue don't keep the FFT busy.
+    val needsAnalysis = showViz || artStyle == ArtStyle.DotArt || artStyle == ArtStyle.Halo
+    val viz = if (panel == Panel.Art && needsAnalysis) rememberVizState(engine.spectrum, state.playing) else null
 
     Column(
         Modifier
@@ -138,7 +144,7 @@ fun NowPlayingScreen(onClose: () -> Unit) {
             Box(modifier, contentAlignment = Alignment.Center) {
                 AnimatedContent(panel, transitionSpec = { fadeIn(tween(200)) togetherWith fadeOut(tween(150)) }, label = "panel") { p ->
                     when (p) {
-                        Panel.Art -> ArtPanel(song, state.playing, showViz)
+                        Panel.Art -> ArtPanel(song, state.playing, showViz, viz)
                         Panel.Lyrics -> LyricsView()
                         Panel.Queue -> QueuePanel()
                     }
@@ -238,14 +244,13 @@ fun NowPlayingScreen(onClose: () -> Unit) {
 }
 
 @Composable
-private fun ArtPanel(song: com.dj.dot.data.Song, playing: Boolean, showViz: Boolean) {
+private fun ArtPanel(song: com.dj.dot.data.Song, playing: Boolean, showViz: Boolean, viz: VizState?) {
     val dot = DotApp.instance
     val engine = dot.engine
     val artStyleIndex by dot.settings.artStyle.flow.collectAsStateWithLifecycle()
     val stripStyleIndex by dot.settings.stripStyle.flow.collectAsStateWithLifecycle()
     val artStyle = ArtStyle.entries[artStyleIndex.coerceIn(0, ArtStyle.entries.lastIndex)]
     val stripStyle = StripStyle.entries[stripStyleIndex.coerceIn(0, StripStyle.entries.lastIndex)]
-    val needsAnalysis = showViz || artStyle == ArtStyle.DotArt || artStyle == ArtStyle.Halo
     var dragX by remember { mutableFloatStateOf(0f) }
     var flash by remember { mutableStateOf<String?>(null) }
     var hearts by remember { androidx.compose.runtime.mutableIntStateOf(0) }
@@ -255,7 +260,6 @@ private fun ArtPanel(song: com.dj.dot.data.Song, playing: Boolean, showViz: Bool
     LaunchedEffect(flash) { if (flash != null) { delay(1100); flash = null } }
 
     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        val viz = if (needsAnalysis) rememberVizState(engine.spectrum, playing) else null
         Box(
             Modifier
                 .weight(1f, fill = false)

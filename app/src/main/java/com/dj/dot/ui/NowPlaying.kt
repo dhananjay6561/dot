@@ -257,6 +257,7 @@ fun NowPlayingScreen(onClose: () -> Unit) {
 @Composable
 private fun ArtPanel(song: com.dj.dot.data.Song, playing: Boolean, showViz: Boolean, viz: VizState?) {
     val dot = DotApp.instance
+    val glyphMode by dot.settings.glyphMode.flow.collectAsStateWithLifecycle()
     val engine = dot.engine
     val artStyleIndex by dot.settings.artStyle.flow.collectAsStateWithLifecycle()
     val stripStyleIndex by dot.settings.stripStyle.flow.collectAsStateWithLifecycle()
@@ -332,6 +333,11 @@ private fun ArtPanel(song: com.dj.dot.data.Song, playing: Boolean, showViz: Bool
                         }
                     },
             )
+        }
+        // On Nothing phones, a slim live copy of the rear lights while they're on.
+        if (dot.glyph.supported && glyphMode != 0) {
+            Spacer(Modifier.height(10.dp))
+            StripMirror(Modifier.width(132.dp).height(14.dp), horizontal = true)
         }
     }
 }

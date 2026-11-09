@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dj.dot.DotApp
 import com.dj.dot.data.Song
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
 private val tabs = listOf("Songs", "Albums", "Artists", "Folders", "Playlists")
@@ -73,6 +74,10 @@ fun HomeScreen() {
         val tabRow = rememberLazyListState()
         // Five pills don't fit a narrow phone, so keep the selected one and its neighbour in view.
         LaunchedEffect(pager.currentPage) { tabRow.animateScrollToItem((pager.currentPage - 1).coerceAtLeast(0)) }
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+        LaunchedEffect(pager) {
+            androidx.compose.runtime.snapshotFlow { pager.currentPage }.drop(1).collect { haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.SegmentTick) }
+        }
         LazyRow(
             state = tabRow,
             contentPadding = PaddingValues(horizontal = 20.dp),

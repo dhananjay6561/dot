@@ -137,7 +137,7 @@ fun Pill(
     icon: ImageVector? = null,
 ) {
     val bg by androidx.compose.animation.animateColorAsState(
-        when { selected -> Dot.White; accent -> Dot.Red; else -> Color.Transparent }, tween(200), label = "pillBg",
+        if (selected) Dot.White else Color.Transparent, tween(200), label = "pillBg",
     )
     val fg by androidx.compose.animation.animateColorAsState(if (selected) Dot.Black else Dot.White, tween(200), label = "pillFg")
     val interaction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
@@ -146,13 +146,13 @@ fun Pill(
             .pressable(interaction, 0.93f)
             .clip(CircleShape)
             .background(bg)
-            .then(if (selected || accent) Modifier else Modifier.border(1.dp, Dot.Line, CircleShape))
+            .then(if (selected) Modifier else Modifier.border(1.dp, if (accent) Dot.White else Dot.Line, CircleShape))
             .clickable(interaction, androidx.compose.material3.ripple(), onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        if (icon != null) Icon(icon, null, tint = fg, modifier = Modifier.size(16.dp))
+        if (icon != null) Icon(icon, null, tint = if (accent && !selected) Dot.Red else fg, modifier = Modifier.size(16.dp))
         Text(text.uppercase(), color = fg, style = MonoLabel, fontWeight = FontWeight.Bold)
     }
 }

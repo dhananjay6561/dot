@@ -347,7 +347,7 @@ private fun QueuePanel() {
 @Composable
 private fun ToggleIcon(icon: ImageVector, on: Boolean, onClick: () -> Unit) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        IconBtn(icon, onClick, tint = if (on) Dot.Red else Dot.Muted)
+        IconBtn(icon, onClick, tint = if (on) Dot.White else Dot.Muted)
         Box(Modifier.size(4.dp).clip(CircleShape).background(if (on) Dot.Red else Dot.Black))
     }
 }

@@ -55,7 +55,7 @@ import com.dj.dot.data.Song
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
-private val tabs = listOf("Songs", "Albums", "Artists", "Folders", "Playlists")
+private val tabs = listOf("Now", "Songs", "Albums", "Artists", "Folders", "Playlists")
 private val sortNames = listOf("Title", "Artist", "Recent")
 
 @Composable
@@ -93,10 +93,11 @@ fun HomeScreen() {
         }
         HorizontalPager(pager, Modifier.weight(1f), key = { it }) { page ->
             when (page) {
-                0 -> SongsTab()
-                1 -> AlbumsTab()
-                2 -> ArtistsTab()
-                3 -> FoldersTab()
+                0 -> NowTab()
+                1 -> SongsTab()
+                2 -> AlbumsTab()
+                3 -> ArtistsTab()
+                4 -> FoldersTab()
                 else -> PlaylistsTab()
             }
         }

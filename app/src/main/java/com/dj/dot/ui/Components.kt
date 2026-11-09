@@ -64,7 +64,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shape
@@ -125,6 +127,21 @@ fun Modifier.pressable(interaction: androidx.compose.foundation.interaction.Muta
         graphicsLayer { scaleX = scale; scaleY = scale }
     }
 
+/** Fades a scrolling row out at whichever edge still has more to scroll to. */
+fun Modifier.fadingEdges(state: LazyListState, width: Dp = 28.dp): Modifier =
+    graphicsLayer { compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen }
+        .drawWithContent {
+            drawContent()
+            val w = width.toPx()
+            val dstIn = androidx.compose.ui.graphics.BlendMode.DstIn
+            if (state.canScrollBackward) {
+                drawRect(Brush.horizontalGradient(listOf(Color.Transparent, Color.Black), startX = 0f, endX = w), blendMode = dstIn)
+            }
+            if (state.canScrollForward) {
+                drawRect(Brush.horizontalGradient(listOf(Color.Black, Color.Transparent), startX = size.width - w, endX = size.width), blendMode = dstIn)
+            }
+        }
+
 // ---- Controls -----------------------------------------------------------------------------
 
 @Composable
@@ -137,7 +154,7 @@ fun Pill(
     icon: ImageVector? = null,
 ) {
     val bg by androidx.compose.animation.animateColorAsState(
-        when { selected -> Dot.White; accent -> Dot.Red; else -> Color.Transparent }, tween(200), label = "pillBg",
+        if (selected) Dot.White else Color.Transparent, tween(200), label = "pillBg",
     )
     val fg by androidx.compose.animation.animateColorAsState(if (selected) Dot.Black else Dot.White, tween(200), label = "pillFg")
     val interaction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
@@ -146,13 +163,13 @@ fun Pill(
             .pressable(interaction, 0.93f)
             .clip(CircleShape)
             .background(bg)
-            .then(if (selected || accent) Modifier else Modifier.border(1.dp, Dot.Line, CircleShape))
+            .then(if (selected) Modifier else Modifier.border(1.dp, if (accent) Dot.White else Dot.Line, CircleShape))
             .clickable(interaction, androidx.compose.material3.ripple(), onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        if (icon != null) Icon(icon, null, tint = fg, modifier = Modifier.size(16.dp))
+        if (icon != null) Icon(icon, null, tint = if (accent && !selected) Dot.Red else fg, modifier = Modifier.size(16.dp))
         Text(text.uppercase(), color = fg, style = MonoLabel, fontWeight = FontWeight.Bold)
     }
 }
@@ -511,7 +528,7 @@ fun SongRow(
                 fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis,
             )
             Text(
-                "${song.artist}  ·  ${formatTime(song.duration)}", color = Dot.Muted, style = MonoSmall,
+                "${song.artist}  ·  ${formatTime(song.duration)}", color = Dot.Muted, style = SansSmall,
                 maxLines = 1, overflow = TextOverflow.Ellipsis,
             )
         }

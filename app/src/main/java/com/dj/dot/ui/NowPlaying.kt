@@ -40,7 +40,6 @@ import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.Fullscreen
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
@@ -51,7 +50,6 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.RepeatOne
 import androidx.compose.material.icons.rounded.Shuffle
-import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -126,10 +124,10 @@ fun NowPlayingScreen(onClose: () -> Unit) {
     ) {
         Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             IconBtn(Icons.Rounded.KeyboardArrowDown, onClose, size = 30.dp)
-            IconBtn(Icons.Rounded.Fullscreen, { app.party = true }, size = 24.dp)
+            DotIconBtn(DotIcons.Party, { app.party = true })
             Label("Now playing", Modifier.weight(1f), color = Dot.White, align = TextAlign.Center)
             DotIconBtn(DotIcons.Visuals, { visualsSheet = true }, tint = if (glyphMode != 0) Dot.Red else Dot.White)
-            IconBtn(Icons.Rounded.Tune, { app.push(Screen.Equalizer) }, description = "Sound and equalizer")
+            DotIconBtn(DotIcons.Sound, { app.push(Screen.Equalizer) }, description = "Sound and equalizer")
         }
 
         // Phones in landscape get two panes: the art, lyrics or queue on the left, controls on the right.
@@ -154,7 +152,7 @@ fun NowPlayingScreen(onClose: () -> Unit) {
                 Column(Modifier.weight(1f)) {
                     DotTitle(song.title, Modifier.basicMarquee(), size = 28.sp)
                     Text(
-                        "${song.artist}  ·  ${song.album}", color = Dot.Muted, style = MonoSmall,
+                        "${song.artist}  ·  ${song.album}", color = Dot.Muted, style = SansSmall,
                         maxLines = 1, overflow = TextOverflow.Ellipsis,
                     )
                     val earphones by dot.headphones.connected.collectAsStateWithLifecycle()
@@ -332,7 +330,7 @@ private fun QueuePanel() {
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(s.title, color = if (current) Dot.Red else if (i < state.index) Dot.Muted else Dot.White, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text(s.artist, color = Dot.Muted, style = MonoSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(s.artist, color = Dot.Muted, style = SansSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     if (!current) {
                         IconBtn(Icons.Rounded.KeyboardArrowUp, { engine.moveInQueue(i, i - 1) }, tint = Dot.Muted, size = 20.dp)
@@ -347,7 +345,7 @@ private fun QueuePanel() {
 @Composable
 private fun ToggleIcon(icon: ImageVector, on: Boolean, onClick: () -> Unit) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        IconBtn(icon, onClick, tint = if (on) Dot.Red else Dot.Muted)
+        IconBtn(icon, onClick, tint = if (on) Dot.White else Dot.Muted)
         Box(Modifier.size(4.dp).clip(CircleShape).background(if (on) Dot.Red else Dot.Black))
     }
 }

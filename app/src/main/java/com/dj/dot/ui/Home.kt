@@ -29,21 +29,11 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.TrendingUp
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Bolt
-import androidx.compose.material.icons.rounded.GraphicEq
-import androidx.compose.material.icons.rounded.Spa
-import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.Folder
-import androidx.compose.material.icons.rounded.History
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Shuffle
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material.icons.rounded.Insights
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,7 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -77,14 +66,18 @@ fun HomeScreen() {
                 DotTitle("Dot", size = 40.sp)
                 Box(Modifier.padding(start = 4.dp, bottom = 11.dp).size(8.dp).clip(CircleShape).background(Dot.Red))
             }
-            IconBtn(Icons.Rounded.Insights, { app.push(Screen.Wrapped) })
-            IconBtn(Icons.Rounded.Search, { app.push(Screen.Search) })
-            IconBtn(Icons.Rounded.Settings, { app.push(Screen.Settings) })
+            DotIconBtn(DotIcons.Wrapped, { app.push(Screen.Wrapped) }, size = 22.dp)
+            DotIconBtn(DotIcons.Search, { app.push(Screen.Search) }, size = 22.dp)
+            DotIconBtn(DotIcons.Settings, { app.push(Screen.Settings) }, size = 22.dp)
         }
+        val tabRow = rememberLazyListState()
+        // Five pills don't fit a narrow phone, so keep the selected one and its neighbour in view.
+        LaunchedEffect(pager.currentPage) { tabRow.animateScrollToItem((pager.currentPage - 1).coerceAtLeast(0)) }
         LazyRow(
+            state = tabRow,
             contentPadding = PaddingValues(horizontal = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(bottom = 8.dp),
+            modifier = Modifier.padding(bottom = 8.dp).fadingEdges(tabRow),
         ) {
             items(tabs.size) { i ->
                 Pill(tabs[i], { scope.launch { pager.animateScrollToPage(i) } }, selected = pager.currentPage == i)
@@ -213,7 +206,7 @@ private fun FoldersTab() {
                 title = folder.name,
                 subtitle = "${folder.songs.size} songs · ${folder.path.removePrefix("/storage/emulated/0")}",
                 onClick = { app.push(Screen.Folder(folder.path)) },
-            ) { IconTile(Icons.Rounded.Folder) }
+            ) { IconTile(DotIcons.Folder) }
         }
     }
 }
@@ -235,13 +228,13 @@ private fun PlaylistsTab() {
                 Pill("New playlist", { creating = true }, accent = true, icon = Icons.Rounded.Add)
             }
         }
-        item { ListRow("Favourites", "${favs.size} songs", { app.push(Screen.Playlist(SMART_FAVOURITES)) }) { IconTile(Icons.Rounded.Favorite, red = true) } }
-        item { ListRow("Recently added", "Latest 100", { app.push(Screen.Playlist(SMART_RECENT)) }) { IconTile(Icons.Rounded.History) } }
-        item { ListRow("Most played", "Your top 100", { app.push(Screen.Playlist(SMART_TOP)) }) { IconTile(Icons.AutoMirrored.Rounded.TrendingUp) } }
+        item { ListRow("Favourites", "${favs.size} songs", { app.push(Screen.Playlist(SMART_FAVOURITES)) }) { IconTile(DotIcons.Heart, red = true) } }
+        item { ListRow("Recently added", "Latest 100", { app.push(Screen.Playlist(SMART_RECENT)) }) { IconTile(DotIcons.Recent) } }
+        item { ListRow("Most played", "Your top 100", { app.push(Screen.Playlist(SMART_TOP)) }) { IconTile(DotIcons.Top) } }
         item { Label("Mood mixes · learned as you listen", Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp)) }
-        item { ListRow("Chill", "${moods[SMART_CHILL] ?: 0} songs · slow and easy", { app.push(Screen.Playlist(SMART_CHILL)) }) { IconTile(Icons.Rounded.Spa) } }
-        item { ListRow("Groove", "${moods[SMART_GROOVE] ?: 0} songs · steady mid-tempo", { app.push(Screen.Playlist(SMART_GROOVE)) }) { IconTile(Icons.Rounded.GraphicEq) } }
-        item { ListRow("Hype", "${moods[SMART_HYPE] ?: 0} songs · fast and loud", { app.push(Screen.Playlist(SMART_HYPE)) }) { IconTile(Icons.Rounded.Bolt, red = true) } }
+        item { ListRow("Chill", "${moods[SMART_CHILL] ?: 0} songs · slow and easy", { app.push(Screen.Playlist(SMART_CHILL)) }) { IconTile(DotIcons.Chill) } }
+        item { ListRow("Groove", "${moods[SMART_GROOVE] ?: 0} songs · steady mid-tempo", { app.push(Screen.Playlist(SMART_GROOVE)) }) { IconTile(DotIcons.Groove) } }
+        item { ListRow("Hype", "${moods[SMART_HYPE] ?: 0} songs · fast and loud", { app.push(Screen.Playlist(SMART_HYPE)) }) { IconTile(DotIcons.Hype, red = true) } }
         if (playlists.isNotEmpty()) item { Label("Your playlists", Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp)) }
         items(playlists, key = { it.id }) { p ->
             ListRow(p.name, "${p.songIds.size} songs", { app.push(Screen.Playlist(p.id)) }) { IconTile(null, text = p.name.take(1)) }
@@ -280,9 +273,9 @@ fun ListRow(title: String, subtitle: String, onClick: () -> Unit, leading: @Comp
 }
 
 @Composable
-fun IconTile(icon: ImageVector?, red: Boolean = false, text: String = "") {
-    Box(Modifier.size(52.dp).clip(RoundedCornerShape(12.dp)).background(if (red) Dot.Red else Dot.Surface2), contentAlignment = Alignment.Center) {
-        if (icon != null) Icon(icon, null, tint = Dot.White, modifier = Modifier.size(24.dp))
+fun IconTile(icon: DotGlyph?, red: Boolean = false, text: String = "") {
+    Box(Modifier.size(52.dp).clip(RoundedCornerShape(12.dp)).background(Dot.Surface2), contentAlignment = Alignment.Center) {
+        if (icon != null) DotIcon(icon, color = if (red) Dot.Red else Dot.White, size = 24.dp)
         else DotTitle(text, size = 22.sp)
     }
 }

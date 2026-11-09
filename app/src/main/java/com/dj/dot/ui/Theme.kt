@@ -34,6 +34,9 @@ val MonoFamily = FontFamily(
 val MonoLabel = TextStyle(fontFamily = MonoFamily, fontSize = 11.sp, letterSpacing = 1.2.sp, lineHeight = 14.sp)
 val MonoSmall = TextStyle(fontFamily = MonoFamily, fontSize = 12.sp, letterSpacing = 0.3.sp, lineHeight = 16.sp)
 
+/** Names under a title (artists, albums): sans, so they scan faster than mono in long lists. */
+val SansSmall = TextStyle(fontSize = 13.sp, lineHeight = 17.sp)
+
 @Composable
 fun DotTheme(content: @Composable () -> Unit) {
     MaterialTheme(

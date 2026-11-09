@@ -108,7 +108,7 @@ fun SearchScreen() {
             songs.isEmpty() && albums.isEmpty() && artists.isEmpty() -> EmptyState("Nothing", "No matches for \"$q\"")
             else -> LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(vertical = 8.dp)) {
                 if (artists.isNotEmpty()) {
-                    item { Label("Artists", Modifier.padding(start = 20.dp, top = 8.dp, bottom = 8.dp), color = Dot.Red) }
+                    item { Label("Artists", Modifier.padding(start = 20.dp, top = 8.dp, bottom = 8.dp)) }
                     item {
                         LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                             items(artists.take(20), key = { it.name }) { a ->
@@ -125,7 +125,7 @@ fun SearchScreen() {
                     }
                 }
                 if (albums.isNotEmpty()) {
-                    item { Label("Albums", Modifier.padding(start = 20.dp, top = 18.dp, bottom = 8.dp), color = Dot.Red) }
+                    item { Label("Albums", Modifier.padding(start = 20.dp, top = 18.dp, bottom = 8.dp)) }
                     item {
                         LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                             items(albums.take(20), key = { it.id }) { al ->
@@ -140,7 +140,7 @@ fun SearchScreen() {
                     }
                 }
                 if (songs.isNotEmpty()) {
-                    item { Label("Songs · ${songs.size}", Modifier.padding(start = 20.dp, top = 18.dp, bottom = 4.dp), color = Dot.Red) }
+                    item { Label("Songs · ${songs.size}", Modifier.padding(start = 20.dp, top = 18.dp, bottom = 4.dp)) }
                     itemsIndexed(songs, key = { _, s -> s.id }) { i, s ->
                         SongRow(s, s.id == state.current?.id, onClick = { dot.engine.playSongs(songs, i) }, onMore = { app.menu = SongMenu(s) })
                     }

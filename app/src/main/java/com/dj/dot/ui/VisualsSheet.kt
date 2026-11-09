@@ -183,7 +183,7 @@ private fun GlyphSection(pick: (() -> Unit) -> Unit) {
                 Switch(
                     beatFlash, { s.glyphBeatFlash.set(it) },
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Dot.White, checkedTrackColor = Dot.Red, checkedBorderColor = Dot.Red,
+                        checkedThumbColor = Dot.Black, checkedTrackColor = Dot.White, checkedBorderColor = Dot.White,
                         uncheckedThumbColor = Dot.Muted, uncheckedTrackColor = Dot.Black, uncheckedBorderColor = Dot.Line,
                     ),
                 )

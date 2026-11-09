@@ -572,9 +572,9 @@ private fun formatHz(hz: Int) = if (hz >= 1000) "%.1fK".format(hz / 1000f).repla
 
 @Composable
 private fun dotSwitchColors() = SwitchDefaults.colors(
-    checkedThumbColor = Dot.White,
-    checkedTrackColor = Dot.Red,
-    checkedBorderColor = Dot.Red,
+    checkedThumbColor = Dot.Black,
+    checkedTrackColor = Dot.White,
+    checkedBorderColor = Dot.White,
     uncheckedThumbColor = Dot.Muted,
     uncheckedTrackColor = Dot.Surface2,
     uncheckedBorderColor = Dot.Line,
@@ -594,7 +594,7 @@ private fun PickerRow(title: String, subtitle: String, options: List<String>, se
 
 @Composable
 private fun Section(title: String) {
-    Label(title, Modifier.padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 4.dp), color = Dot.Red)
+    Label(title, Modifier.padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 4.dp))
 }
 
 @Composable

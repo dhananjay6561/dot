@@ -18,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -42,6 +44,149 @@ object DotIcons {
         "X.X.X.X.X",
         "X.X.X.X.X",
     )
+
+    val Search = DotGlyph(
+        "..XXX....",
+        ".X...X...",
+        "X.....X..",
+        "X.....X..",
+        "X.....X..",
+        ".X...X...",
+        "..XXX.X..",
+        ".......X.",
+        "........X",
+    )
+
+    /** A cog. */
+    val Settings = DotGlyph(
+        "....X....",
+        ".X.XXX.X.",
+        "..X...X..",
+        ".X.....X.",
+        "XX..X..XX",
+        ".X.....X.",
+        "..X...X..",
+        ".X.XXX.X.",
+        "....X....",
+    )
+
+    /** A four-point sparkle: Dot Wrapped. */
+    val Wrapped = DotGlyph(
+        "....X....",
+        "....X....",
+        "...XXX...",
+        ".XXXXXXX.",
+        "...XXX...",
+        "....X....",
+        "....X....",
+    )
+
+    /** Four corners: full-screen Party mode. */
+    val Party = DotGlyph(
+        "XXX...XXX",
+        "X.......X",
+        "X.......X",
+        ".........",
+        ".........",
+        ".........",
+        "X.......X",
+        "X.......X",
+        "XXX...XXX",
+    )
+
+    /** Two sliders: the Sound screen. */
+    val Sound = DotGlyph(
+        "..X......",
+        "XXXXXXXXX",
+        "..X......",
+        ".........",
+        "......X..",
+        "XXXXXXXXX",
+        "......X..",
+    )
+
+    val Heart = DotGlyph(
+        ".XX...XX.",
+        "XXXX.XXXX",
+        "XXXXXXXXX",
+        "XXXXXXXXX",
+        ".XXXXXXX.",
+        "..XXXXX..",
+        "...XXX...",
+        "....X....",
+    )
+
+    /** A clock face: Recently added. */
+    val Recent = DotGlyph(
+        "..XXXXX..",
+        ".X.....X.",
+        "X...X...X",
+        "X...X...X",
+        "X...XXX.X",
+        "X.......X",
+        "X.......X",
+        ".X.....X.",
+        "..XXXXX..",
+    )
+
+    /** An arrow up: Most played. */
+    val Top = DotGlyph(
+        "....X....",
+        "...XXX...",
+        "..X.X.X..",
+        ".X..X..X.",
+        "....X....",
+        "....X....",
+        "....X....",
+        "....X....",
+    )
+
+    /** A crescent moon: the Chill mix. */
+    val Chill = DotGlyph(
+        "...XXXX..",
+        ".XXXX....",
+        "XXXX.....",
+        "XXX......",
+        "XXX......",
+        "XXXX....X",
+        ".XXXXXXX.",
+        "..XXXXX..",
+    )
+
+    /** A symmetric waveform: the Groove mix. */
+    val Groove = DotGlyph(
+        "....X....",
+        "..X.X....",
+        "..X.X.X..",
+        "X.X.X.X.X",
+        "X.X.X.X.X",
+        "X.X.X.X.X",
+        "..X.X.X..",
+        "..X.X....",
+        "....X....",
+    )
+
+    /** A lightning bolt: the Hype mix. */
+    val Hype = DotGlyph(
+        "....XXX..",
+        "...XXX...",
+        "..XXX....",
+        ".XXXXXXX.",
+        "....XXX..",
+        "...XXX...",
+        "..XX.....",
+        ".X.......",
+    )
+
+    val Folder = DotGlyph(
+        "XXX......",
+        "X..X.....",
+        "XXXXXXXXX",
+        "X.......X",
+        "X.......X",
+        "X.......X",
+        "XXXXXXXXX",
+    )
 }
 
 @Composable
@@ -63,6 +208,7 @@ fun DotIconBtn(
     modifier: Modifier = Modifier,
     tint: Color = Dot.White,
     size: Dp = 20.dp,
+    description: String? = null,
 ) {
     val interaction = remember { MutableInteractionSource() }
     Box(
@@ -70,7 +216,8 @@ fun DotIconBtn(
             .size(44.dp)
             .pressable(interaction)
             .clip(CircleShape)
-            .clickable(interaction, ripple(bounded = true), onClick = onClick),
+            .clickable(interaction, ripple(bounded = true), onClick = onClick)
+            .then(if (description != null) Modifier.semantics { contentDescription = description } else Modifier),
         contentAlignment = Alignment.Center,
     ) {
         DotIcon(glyph, color = tint, size = size)

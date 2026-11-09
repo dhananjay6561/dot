@@ -250,7 +250,7 @@ private fun MiniPlayer(song: Song, playing: Boolean, onOpen: () -> Unit) {
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(song.title, color = Dot.White, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(song.artist, color = Dot.Muted, style = MonoSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(song.artist, color = Dot.Muted, style = SansSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             IconBtn(if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, engine::toggle, size = 28.dp)
             IconBtn(Icons.Rounded.SkipNext, engine::next)

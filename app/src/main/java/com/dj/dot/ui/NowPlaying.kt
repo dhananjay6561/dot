@@ -335,6 +335,7 @@ private fun QueuePanel() {
     val engine = DotApp.instance.engine
     val state by engine.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = (state.index - 1).coerceAtLeast(0))
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
     Column(Modifier.fillMaxSize()) {
         Label("Up next · ${state.queue.size - state.index - 1} songs", Modifier.padding(vertical = 8.dp))
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
@@ -351,7 +352,7 @@ private fun QueuePanel() {
                         Text(s.artist, color = Dot.Muted, style = SansSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     if (!current) {
-                        IconBtn(Icons.Rounded.KeyboardArrowUp, { engine.moveInQueue(i, i - 1) }, tint = Dot.Muted, size = 20.dp)
+                        IconBtn(Icons.Rounded.KeyboardArrowUp, { haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.SegmentTick); engine.moveInQueue(i, i - 1) }, tint = Dot.Muted, size = 20.dp)
                         IconBtn(Icons.Rounded.Close, { engine.removeFromQueue(i) }, tint = Dot.Muted, size = 18.dp)
                     }
                 }

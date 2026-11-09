@@ -57,7 +57,7 @@ data class LibraryData(
                 val sorted = list.sortedWith(compareBy<Song> { it.track }.thenBy(byText) { it.title })
                 val artists = list.map { it.artist }.distinct()
                 Album(id, sorted.first().album, if (artists.size == 1) artists[0] else "Various artists", list.maxOf { it.year }, sorted)
-            }.sortedWith(compareBy(byText) { it.title })
+            }.sortedWith(compareBy<Album> { !startsWithLetter(it.title) }.thenBy(byText) { it.title })
             val artists = all.groupBy { it.artist }.map { (name, list) ->
                 Artist(
                     name,

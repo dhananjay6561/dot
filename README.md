@@ -493,7 +493,7 @@ app/src/main/java/com/dj/dot
 ├── DotApp.kt              app singletons
 ├── MainActivity.kt        edge-to-edge host, binds the media controller
 ├── data/
-│   ├── Models.kt          Song, Album, Artist, Folder, Playlist
+│   ├── Models.kt          Song, Album, Artist, Folder, Playlist, library sorting
 │   ├── Library.kt         MediaStore scan, cache and auto-rescan
 │   ├── TagCleaner.kt      strips download-site junk from tags
 │   ├── PlaylistStore.kt   playlists, favourites, play counts, listening stats
@@ -511,11 +511,14 @@ app/src/main/java/com/dj/dot
 └── ui/
     ├── Theme.kt           colours and type
     ├── Components.kt      pills, sliders, art, fast scroller, press animations
-    ├── DotIcons.kt        the dot-matrix Visuals icon
-    ├── Root.kt            navigation, permissions, mini player
-    ├── Home.kt            library tabs
+    ├── DotIcons.kt        dot-matrix icons for Visuals, playlists, moods, folders and Now Playing
+    ├── DotPattern.kt      mirrored dot patterns for songs without a cover
+    ├── Plural.kt          "1 song", "2 songs"
+    ├── Root.kt            navigation, permissions, mini player, shared cover transition
+    ├── Home.kt            library tabs and the sliding tab indicator
+    ├── NowTab.kt          the Now page: up next, mood mixes, most played, recent
     ├── Details.kt         album, artist, folder, playlist
-    ├── NowPlaying.kt      player, queue, sleep sheet
+    ├── NowPlaying.kt      player, cover glow, beat pulse, queue, sleep sheet
     ├── Visualizers.kt     grid, mirror, wave, dot art, halo
     ├── VisualsSheet.kt    visuals and Glyph panel with live previews
     ├── VinylViz.kt        spinning record with scratch to seek
@@ -524,7 +527,7 @@ app/src/main/java/com/dj/dot
     ├── ShakeToShuffle.kt  shake gesture
     ├── LyricsView.kt      karaoke lyrics
     ├── SleepDial.kt       analog sleep timer
-    ├── WrappedScreen.kt   listening stats
+    ├── WrappedScreen.kt   listening stats and Wrapped stories
     ├── SearchScreen.kt
     ├── SettingsScreen.kt  settings and the sound screen
     └── Sheets.kt          song menu, playlist picker, dialogs
@@ -533,7 +536,7 @@ app/src/main/java/com/dj/dot
     ├── DotTileService.kt  Quick Settings tile
     └── RemoteControl.kt   sends widget and tile commands through the media session
 
-app/src/test/java/com/dj/dot   JVM unit tests: store, restore, lyrics, tags, DSP, tempo
+app/src/test/java/com/dj/dot   JVM unit tests: store, restore, library sorting, lyrics, tags, DSP, tempo, counts, cover patterns
 ```
 
 ## Building

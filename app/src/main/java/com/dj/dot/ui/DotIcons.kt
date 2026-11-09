@@ -45,31 +45,6 @@ object DotIcons {
         "X.X.X.X.X",
     )
 
-    val Search = DotGlyph(
-        "..XXX....",
-        ".X...X...",
-        "X.....X..",
-        "X.....X..",
-        "X.....X..",
-        ".X...X...",
-        "..XXX.X..",
-        ".......X.",
-        "........X",
-    )
-
-    /** A cog. */
-    val Settings = DotGlyph(
-        "....X....",
-        ".X.XXX.X.",
-        "..X...X..",
-        ".X.....X.",
-        "XX..X..XX",
-        ".X.....X.",
-        "..X...X..",
-        ".X.XXX.X.",
-        "....X....",
-    )
-
     /** A four-point sparkle: Dot Wrapped. */
     val Wrapped = DotGlyph(
         "....X....",

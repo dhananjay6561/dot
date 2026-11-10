@@ -25,8 +25,8 @@ android {
         applicationId = "com.dj.dot"
         minSdk = 29
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.2.1"
+        versionCode = 5
+        versionName = "1.3.0"
         // Dot's UI is English and it ships for phones; drop library translations and other CPUs.
         androidResources.localeFilters += "en"
         ndk { abiFilters += "arm64-v8a" }

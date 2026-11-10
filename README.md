@@ -1,11 +1,11 @@
-# Dot
+# Dot: offline music player for Nothing Phone and Android
 
 [![Build](https://github.com/dhananjay6561/dot/actions/workflows/build.yml/badge.svg?branch=main&event=push)](https://github.com/dhananjay6561/dot/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/dhananjay6561/dot?color=D71921&label=release)](https://github.com/dhananjay6561/dot/releases/latest)
 [![License](https://img.shields.io/github/license/dhananjay6561/dot?color=111111)](LICENSE)
 ![Android 10+](https://img.shields.io/badge/Android-10%2B-111111)
 
-An offline music player for Android, designed around the Nothing OS look: pure black, dot-matrix type, a single red accent. Built for the Nothing Phone (4a), and it runs on any phone with Android 10 or newer. On Nothing phones it also drives the Glyph lights on the back.
+**Dot is a free, open-source offline music player for Android**, designed around the Nothing OS look: pure black, dot-matrix type and a single red accent. It plays the music files already on your phone, with crossfade, a 10-band equalizer, synced karaoke lyrics and beat-reactive visuals. Built for the Nothing Phone (4a), it runs on any phone with Android 10 or newer, and on Nothing phones it also drives the Glyph lights on the back in time with the music.
 
 <p align="center">
   <img src="docs/demo/dot-demo.webp" width="800" alt="Dot demo: the library, Dot art, Halo and Vinyl covers, visualizers, the Visuals panel, the sleep dial and Party mode">
@@ -21,12 +21,17 @@ An offline music player for Android, designed around the Nothing OS look: pure b
 
 Dot plays the music that lives on your phone. No accounts, no streaming, no ads, no network calls.
 
-| | Size |
-| --- | --- |
-| Download | **3.8 MB** |
-| Installed | **3.9 MB** |
+### At a glance
 
-For comparison, most streaming music apps install at well over 100 MB.
+| | |
+| --- | --- |
+| What it is | An offline music player for local files (MP3, FLAC, ALAC, WAV, AAC, Opus, Vorbis) |
+| Price | Free, no ads, no in-app purchases |
+| License | Open source, Apache 2.0 |
+| Works on | Any Android phone with Android 10 or newer; Glyph lights on the Nothing Phone (4a) |
+| Internet | None. Dot has no internet permission at all |
+| Download size | **3.8 MB** (most streaming music apps install at well over 100 MB) |
+| Latest version | 1.3.0, from [GitHub Releases](https://github.com/dhananjay6561/dot/releases/latest) |
 
 ## Why Dot
 
@@ -37,15 +42,29 @@ Most Nothing-styled players restyle a regular player. Dot is built around Nothin
 - **It shows the music.** Dot art, Halo and a scratchable Vinyl cover, Grid, Mirror and Wave visualizers, and a Party mode that builds its landscape from the song itself.
 - **Transitions feel mixed, not cut.** Crossfades start on the beat.
 - **Every detail is dot matrix.** Dot sliders, an analog sleep dial, karaoke lyrics and a bedside clock, all in Nothing's black, white and red.
-- **It knows how you listen.** Wrapped stats, mood mixes that learn each song's tempo, and gestures.
+- **It knows how you listen.** A Now page with what's next, your mood mixes and your most played songs, mixes that learn each song's tempo, and Wrapped stats told as tap-through stories.
+- **It moves like one piece.** The cover grows out of the mini player into Now Playing, the screen glows in the cover's colour, and the play button pulses on the beat.
 
 All of it in a **3.8 MB download**, fully offline, with no accounts and no internet permission.
 
 ## Download
 
-Grab **`Dot-1.2.1.apk`** from the [latest release](https://github.com/dhananjay6561/dot/releases/latest), open it on your phone and allow installing from that source. Android 10 or newer.
+Grab **`Dot-1.3.0.apk`** from the [latest release](https://github.com/dhananjay6561/dot/releases/latest), open it on your phone and allow installing from that source. Android 10 or newer.
 
-> **Coming from 1.0 or 1.1?** From 1.2.0 Dot is signed with its own release key, so it can't update the older build in place. Back up first (**Settings → Back up**), uninstall the old Dot, install 1.2.1, then **Settings → Restore**. Later updates install in place again.
+> **Coming from 1.2.x?** 1.3.0 installs over it in place and keeps your playlists, favourites and stats.
+>
+> **Coming from 1.0 or 1.1?** From 1.2.0 Dot is signed with its own release key, so it can't update the older build in place. Back up first (**Settings → Back up**), uninstall the old Dot, install 1.3.0, then **Settings → Restore**. Later updates install in place again.
+
+## What's new in 1.3.0
+
+- **A Now page** opens the library: up next from your queue, your Chill, Groove and Hype mixes, most played, recently added and your Wrapped minutes.
+- **Now Playing reacts to the song.** A dotted glow in the cover's colour, a play button that pulses on the beat, and a live mirror of the Glyph lights under the visualizer.
+- **Smoother motion.** The cover grows out of the mini player, screens settle in on a spring, one indicator slides between the library tabs, and taps on play, like, tabs and the queue get a haptic tick.
+- **Wrapped as stories.** Tap through your minutes, top artist, top song, listening clock and listener type, then share the summary card.
+- **Cleaner library.** Songs without a cover get their own dot pattern, titles that start with a number sort after the alphabet, and counts read "1 song" instead of "1 songs".
+- **Calmer colour.** Red now marks only what's live, like the playing song and the seek head; switches and controls are white, and the playlist and Now Playing icons are drawn in dots.
+
+See the [full release notes](https://github.com/dhananjay6561/dot/releases/tag/v1.3.0).
 
 
 ## Features
@@ -85,6 +104,8 @@ Grab **`Dot-1.2.1.apk`** from the [latest release](https://github.com/dhananjay6
   - **Vinyl:** a spinning record at 33⅓ RPM with dotted grooves and a tonearm that tracks progress; grab it to scratch through the song
 - Three visualizer styles, switched by tapping the strip: **Grid**, **Mirror** and **Wave**
 - Real-time beat detection with a live BPM readout
+- Now Playing glows in the cover's colour: a dotted halo, picked once per album, that fades ring by ring and crossfades between songs
+- The play button pulses gently on every beat
 - A Visuals panel with live previews of every style, rendered from the song that's playing
 - **Party mode:** a full-screen landscape scene in dots: a red sun on the horizon, a spectrum skyline, a floor that rushes towards you at the song's tempo, and sparks on every beat
 - **Bedside clock:** a big dot-matrix clock with what's playing; opens by itself on the charger after a minute untouched, dims, and shifts slightly so the OLED never burns in
@@ -94,7 +115,7 @@ Grab **`Dot-1.2.1.apk`** from the [latest release](https://github.com/dhananjay6
   - **Meter:** the six LEDs climb with the bass, with smooth per-LED brightness
   - **Pulse:** the whole strip flashes on every beat
   - **Progress:** the strip fills as the song plays
-- Brightness, sensitivity and beat-flash controls, with a live on-screen mirror of the strip
+- Brightness, sensitivity and beat-flash controls, with a live on-screen mirror of the strip in the Visuals panel and under the visualizer on Now Playing
 - Controlled from the Glyph button on Now Playing or from Settings
 
 **Lyrics**
@@ -108,20 +129,24 @@ Grab **`Dot-1.2.1.apk`** from the [latest release](https://github.com/dhananjay6
 - Reads `.lrc` files only from the folders you pick in Settings, with no all-files access
 
 **Library**
+- A **Now** page first: up next from your queue, mood mix cards, most played, recently added and your Wrapped minutes, each with a link to the full list
 - Songs, albums, artists, folders and playlists
 - Favourites, Recently added and Most played lists
 - Mood mixes: Dot learns each song's tempo on its first play and sorts it into **Chill**, **Groove** or **Hype**
 - Search across songs, albums and artists
 - Fast scroller with a letter bubble on long lists
+- Titles that start with a number or symbol sort after the alphabet, in a # group, like other players
+- Songs without a cover get their own mirrored dot pattern, made from the title, so they're easy to tell apart
 - Cleans download-site junk from tags for display, such as "(DjPunjab.CoM)", "- PagalNew" or "320 Kbps"; files are never modified
 - Hides WhatsApp voice notes and clips below a minimum length
 - Opens instantly from a cached index and only rescans when Android reports a change
 
 **Dot Wrapped**
-- Total listening time, top artists, top songs and a day streak
+- Opens as full-screen stories: tap the right side for the next card, the left for the one before; each moves on by itself after five seconds
+- Total listening time that counts up, top artists, top songs and a day streak
 - A listening clock showing when in the day you listen, and the last seven days
 - A listener type (Early bird, Daydreamer, Evening soul, Night owl)
-- A summary card you can share as an image
+- A summary card you can share as an image, and **All stats** for every chart on one page
 
 **Gestures**
 - Double-tap the art to like, with a heart burst
@@ -129,9 +154,13 @@ Grab **`Dot-1.2.1.apk`** from the [latest release](https://github.com/dhananjay6
 - Shake the phone back and forth for a random song
 
 **Feel**
+- The cover grows out of the mini player into Now Playing and shrinks back when you close it
+- New screens settle in on a soft spring; one white indicator slides between the library tabs as you swipe
+- Haptic ticks on play and pause, liking a song, switching tabs and moving songs in the queue
 - Nothing-style dot-matrix sliders that grow under your finger, with value bubbles and haptic ticks
 - Buttons and pills squish on press, icons scale and cross-fade when they change, colours fade between states
 - Liking a song pops the heart
+- Red is kept for what's live, like the playing song, the seek head and beats; switches and controls stay black and white
 - Two-pane Now Playing in landscape; sheets open fully and scroll on short screens
 
 **Earphones**
@@ -198,6 +227,38 @@ Grab **`Dot-1.2.1.apk`** from the [latest release](https://github.com/dhananjay6
 <td align="center"><img src="docs/screenshots/bedside.webp" width="200" alt="Bedside clock"><br><sub>Bedside clock</sub></td></tr>
 </table>
 
+## FAQ
+
+### Is Dot free?
+Yes. Dot is free and open source under the Apache 2.0 license, with no ads, no in-app purchases and no account.
+
+### Does Dot need an internet connection?
+No. Dot has no internet permission, so it cannot connect to the network at all. It plays music files that are already on your phone.
+
+### Does Dot work on phones that aren't made by Nothing?
+Yes. Dot runs on any Android phone with Android 10 or newer. Only the Glyph light features need a Nothing Phone (4a); everything else, including the Nothing-style design, works everywhere.
+
+### How do I make the Nothing Glyph lights react to music?
+Open Now Playing, tap the Visuals button (the dotted bars at the top) and pick a Glyph mode: **Meter** climbs with the bass, **Pulse** flashes on every beat and **Progress** fills as the song plays. You can also set it from Settings.
+
+### Which audio formats does Dot play?
+MP3, AAC, FLAC, ALAC, WAV, Opus and Vorbis. Lossless files play untouched, and surround files skip the effects chain instead of failing.
+
+### Does Dot show synced lyrics?
+Yes. Dot reads synced `.lrc` files and lyrics embedded in ID3 or Vorbis tags, and fills the current line left to right as it is sung, karaoke style. Pick your lyrics folders under **Settings → Lyrics folders**.
+
+### Does Dot have an equalizer?
+Yes, its own: a 10-band equalizer from 31 Hz to 16 kHz with nine presets, eight one-tap sound modes, bass boost, stereo widening, reverb, volume levelling and a limiter that stops boosted sound from crackling. It sounds the same on every phone because it doesn't rely on the phone's built-in effects.
+
+### Can Dot stream from Spotify or YouTube Music?
+No. Dot is a player for local music files only, by design.
+
+### How do I move my playlists and stats to a new phone?
+Use **Settings → Back up** on the old phone and **Settings → Restore** on the new one. Songs are matched by file path first and then by title and artist, so playlists, favourites, play counts and learned tempos carry over.
+
+### How big is Dot?
+About a 3.8 MB download. Release builds are shrunk with R8 and ship only English resources and the code the app uses.
+
 ## Architecture
 
 Dot is a single-module app in four layers. Data flows up as `StateFlow`; commands flow down as plain method calls on a few app-wide singletons created in `DotApp`.
@@ -206,7 +267,7 @@ Dot is a single-module app in four layers. Data flows up as `StateFlow`; command
 flowchart TB
     subgraph UI["UI · Jetpack Compose"]
         direction LR
-        Screens["Home · Details · Search<br/>Settings · Sound · Wrapped"]
+        Screens["Home: Now page + library tabs<br/>Details · Search · Settings<br/>Sound · Wrapped stories"]
         NP["Now Playing<br/>cover styles · visualizer<br/>lyrics · queue"]
         Overlays["Party mode · Bedside clock<br/>Visuals · Sleep dial · Song menu"]
         Gestures["Shake · double-tap · swipes"]
@@ -261,6 +322,7 @@ flowchart TB
 - **Each player has its own tap.** Only the active player's audio reaches the analyser, so a crossfade never blends two songs into one beat track.
 - **Settings cross threads as one snapshot.** `AudioFx` turns the sound settings into an immutable `DspConfig` and publishes it in a single write; each player's `DotDsp` reads it once per buffer.
 - **Overlays are plain composables.** Party mode, the bedside clock and the sheets sit on top of the navigation stack in `Root`, so they keep their own state and close with back.
+- **One shared cover.** `Root` wraps the app in a `SharedTransitionLayout`, so the mini player art and the Now Playing cover are one shared element. The bedside clock sits outside it, so the animation never draws over the clock.
 
 ### Data and persistence
 
@@ -296,7 +358,9 @@ flowchart LR
 ```mermaid
 flowchart LR
     Home --> Album & Artist & Folder & Playlist
+    Home --> Now["Now page"] --> Playlist
     Home --> Search & Settings & Wrapped
+    Wrapped --> Stories["Stories"] --> Stats["All stats"]
     Settings --> Sound
     Mini["Mini player"] --> NP["Now Playing"]
     NP --> Visuals & Sleep["Sleep dial"] & Sound
@@ -397,7 +461,9 @@ Dot is built to stay light on battery and memory:
 - Listening stats are written once a minute and on pause, not continuously.
 - The library opens from a cached index and only rescans when MediaStore's change counter moves.
 - Album art comes from `ContentResolver.loadThumbnail` with an in-memory LRU cache, with no image library.
-- Only the parts that change every frame update: the seek bar, the lyric fill and the beat dot repaint without rebuilding the screen.
+- Only the parts that change every frame update: the seek bar, the lyric fill, the beat dot, the play button's beat pulse and the sliding tab indicator repaint without rebuilding the screen.
+- Now Playing runs one beat analyser for the cover, the strip and the play button, and only while the cover is showing.
+- The cover glow colour is read once per album from a small thumbnail, off the main thread; its dot positions are worked out once per screen size, so a new song only repaints them.
 - The current lyric line is found by binary search; queue edits change the list in place instead of rebuilding it.
 - Analyser frame lookups walk back from the newest frame and beat statistics are kept as running sums.
 - Search is debounced and matched off the main thread.
@@ -427,7 +493,7 @@ app/src/main/java/com/dj/dot
 ├── DotApp.kt              app singletons
 ├── MainActivity.kt        edge-to-edge host, binds the media controller
 ├── data/
-│   ├── Models.kt          Song, Album, Artist, Folder, Playlist
+│   ├── Models.kt          Song, Album, Artist, Folder, Playlist, library sorting
 │   ├── Library.kt         MediaStore scan, cache and auto-rescan
 │   ├── TagCleaner.kt      strips download-site junk from tags
 │   ├── PlaylistStore.kt   playlists, favourites, play counts, listening stats
@@ -445,11 +511,14 @@ app/src/main/java/com/dj/dot
 └── ui/
     ├── Theme.kt           colours and type
     ├── Components.kt      pills, sliders, art, fast scroller, press animations
-    ├── DotIcons.kt        the dot-matrix Visuals icon
-    ├── Root.kt            navigation, permissions, mini player
-    ├── Home.kt            library tabs
+    ├── DotIcons.kt        dot-matrix icons for Visuals, playlists, moods, folders and Now Playing
+    ├── DotPattern.kt      mirrored dot patterns for songs without a cover
+    ├── Plural.kt          "1 song", "2 songs"
+    ├── Root.kt            navigation, permissions, mini player, shared cover transition
+    ├── Home.kt            library tabs and the sliding tab indicator
+    ├── NowTab.kt          the Now page: up next, mood mixes, most played, recent
     ├── Details.kt         album, artist, folder, playlist
-    ├── NowPlaying.kt      player, queue, sleep sheet
+    ├── NowPlaying.kt      player, cover glow, beat pulse, queue, sleep sheet
     ├── Visualizers.kt     grid, mirror, wave, dot art, halo
     ├── VisualsSheet.kt    visuals and Glyph panel with live previews
     ├── VinylViz.kt        spinning record with scratch to seek
@@ -458,7 +527,7 @@ app/src/main/java/com/dj/dot
     ├── ShakeToShuffle.kt  shake gesture
     ├── LyricsView.kt      karaoke lyrics
     ├── SleepDial.kt       analog sleep timer
-    ├── WrappedScreen.kt   listening stats
+    ├── WrappedScreen.kt   listening stats and Wrapped stories
     ├── SearchScreen.kt
     ├── SettingsScreen.kt  settings and the sound screen
     └── Sheets.kt          song menu, playlist picker, dialogs
@@ -467,7 +536,7 @@ app/src/main/java/com/dj/dot
     ├── DotTileService.kt  Quick Settings tile
     └── RemoteControl.kt   sends widget and tile commands through the media session
 
-app/src/test/java/com/dj/dot   JVM unit tests: store, restore, lyrics, tags, DSP, tempo
+app/src/test/java/com/dj/dot   JVM unit tests: store, restore, library sorting, lyrics, tags, DSP, tempo, counts, cover patterns
 ```
 
 ## Building
@@ -503,7 +572,7 @@ Checks that CI runs on every push and pull request:
 ./gradlew installDebug
 ```
 
-`installRelease` works once release signing is set up. Or copy the APK to the phone and open it, allowing installs from that source when asked.
+Debug builds install as a separate app, `com.dj.dot.debug`, next to a release install, so testing never touches your real library or stats. `installRelease` works once release signing is set up. Or copy the APK to the phone and open it, allowing installs from that source when asked.
 
 ### Recommended on first launch
 

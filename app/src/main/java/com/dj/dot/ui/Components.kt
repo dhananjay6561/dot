@@ -496,7 +496,7 @@ private fun glowOf(cover: ImageBitmap): Color? {
 }
 
 @Composable
-fun Art(song: Song?, modifier: Modifier = Modifier, px: Int = 192, shape: Shape = RoundedCornerShape(10.dp)) {
+fun Art(song: Song?, modifier: Modifier = Modifier, px: Int = 192, shape: Shape = RoundedCornerShape(10.dp), pattern: Boolean = true) {
     val context = LocalContext.current
     // Three buckets keep one decode per album per size class instead of one per call site.
     val bucket = when { px <= 200 -> 192; px <= 640 -> 600; else -> 1080 }
@@ -508,7 +508,7 @@ fun Art(song: Song?, modifier: Modifier = Modifier, px: Int = 192, shape: Shape 
     Box(modifier.clip(shape).background(Dot.Surface2), contentAlignment = Alignment.Center) {
         val b = bitmap
         when {
-            b == null -> DotPlaceholder(Modifier.fillMaxSize(), seed = song?.title?.hashCode())
+            b == null -> DotPlaceholder(Modifier.fillMaxSize(), seed = if (pattern) song?.title?.hashCode() else null)
             // Square-ish covers fill the tile; a hair of trim is invisible.
             b.width.toFloat() / b.height in 0.9f..1.1f -> Image(b, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
             // Wide or tall covers show in full over a blurred copy of themselves.

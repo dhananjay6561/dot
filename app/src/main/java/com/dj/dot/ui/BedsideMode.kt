@@ -119,7 +119,7 @@ fun BedsideMode(onExit: () -> Unit) {
             if (song != null) {
                 Spacer(Modifier.height(36.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Art(song, Modifier.size(44.dp), px = 132, shape = RoundedCornerShape(10.dp))
+                    Art(song, Modifier.size(44.dp), px = 132, shape = RoundedCornerShape(10.dp), pattern = false)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.width(200.dp)) {
                         DotTitle(song.title, size = 18.sp)

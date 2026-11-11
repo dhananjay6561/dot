@@ -174,6 +174,7 @@ See the [full release notes](https://github.com/dhananjay6561/dot/releases/tag/v
 
 **Backup**
 - Back up playlists, favourites, play counts, listening stats and learned tempos to a file, and restore them later
+- **Privacy:** exported backups include full music file paths (folder names and file names) and listening statistics. Keep the file private and review it before sharing.
 - Songs are matched by file path, then by title and artist, so a backup survives a phone reset or a new phone
 - A restore is checked in full before anything changes, and the data it replaces is kept as `library.json.before-restore`
 - Android system backup and phone transfer carry only portable settings; use the manual export for playlists and listening statistics

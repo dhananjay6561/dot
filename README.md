@@ -176,6 +176,7 @@ See the [full release notes](https://github.com/dhananjay6561/dot/releases/tag/v
 - Back up playlists, favourites, play counts, listening stats and learned tempos to a file, and restore them later
 - Songs are matched by file path, then by title and artist, so a backup survives a phone reset or a new phone
 - A restore is checked in full before anything changes, and the data it replaces is kept as `library.json.before-restore`
+- Android system backup and phone transfer carry only portable settings; use the manual export for playlists and listening statistics
 
 **System**
 - Keeps playing in the background and with the screen locked
@@ -326,14 +327,15 @@ flowchart TB
 
 ### Data and persistence
 
-Dot has no database. Everything persists in three small files and Android's own media index:
+Dot has no database. Everything persists in four small files and Android's own media index:
 
 ```mermaid
 flowchart LR
     MS[("MediaStore<br/>Android's audio index")]
     Cache[("library_cache.json<br/>last scan + change key")]
     Lib[("library.json<br/>playlists · favourites · play counts<br/>listening time · tempos")]
-    Prefs[("SharedPreferences<br/>settings · saved queue · lyric offsets")]
+    Portable[("dot_portable.xml<br/>playback · sound · UI settings")]
+    Device[("dot.xml<br/>saved queue · lyric offsets · folder grants")]
     LRC[(".lrc files<br/>in folders you picked")]
 
     MS -- "query on change" --> Library
@@ -341,9 +343,10 @@ flowchart LR
     Library -- "after a rescan" --> Cache
     Library --> Engine
     Store <--> Lib
-    Settings <--> Prefs
+    Settings <--> Portable
+    Settings <--> Device
     LRC --> Lyrics
-    Engine -- "save on pause / exit" --> Prefs
+    Engine -- "save on pause / exit" --> Device
 ```
 
 - **Opening the app:** the library loads from `library_cache.json` straight away, then Dot compares MediaStore's change counter and filters with the cached key and only re-queries if something changed.
@@ -595,6 +598,8 @@ Debug builds install as a separate app, `com.dj.dot.debug`, next to a release in
 | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Optional, asked from Settings |
 
 Dot has no internet permission and no all-files access. `.lrc` files are read only from folders you choose in the system folder picker, which needs no permission.
+
+Android's system backup can still copy Dot's portable playback, sound and UI settings off the phone, but cloud backup requires client-side encryption; direct device transfer is also allowed. Playlists, favourites, listening history, learned tempos, the song-path cache, saved queue, lyric offsets and folder grants are excluded from both. To move playlists and listening data to a new phone, use **Settings → Back up / Restore**, which matches songs by path or title and artist.
 
 ## Roadmap
 

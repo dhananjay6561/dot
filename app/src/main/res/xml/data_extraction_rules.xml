@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+: no MediaStore IDs, listening data, SAF grants, scan caches or recovery copies. -->
+<data-extraction-rules>
+    <cloud-backup disableIfNoEncryptionCapabilities="true">
+        <include domain="sharedpref" path="dot_portable.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="sharedpref" path="dot_portable.xml" />
+    </device-transfer>
+</data-extraction-rules>

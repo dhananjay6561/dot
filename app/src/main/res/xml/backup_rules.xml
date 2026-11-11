@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 10 and 11 (Android 12+ reads data_extraction_rules.xml): only portable settings. -->
+<full-backup-content>
+    <include domain="sharedpref" path="dot_portable.xml" requireFlags="clientSideEncryption" />
+</full-backup-content>

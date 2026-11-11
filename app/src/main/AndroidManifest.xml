@@ -18,11 +18,15 @@
     <!-- Media3 transitively requests network state, but Dot is strictly an offline player. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
 
+    <!-- The XML policies, not allowBackup alone, control what Android backs up and transfers. -->
     <application
         android:name=".DotApp"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
         android:label="Dot"
+        android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:supportsRtl="true"
         android:theme="@style/Theme.Dot">
 

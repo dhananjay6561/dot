@@ -463,7 +463,7 @@ private fun BackupRows() {
         androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
     ) { uri -> pendingRestore = uri }
 
-    NavRow("Back up", "Playlists, favourites and stats to a file") {
+    NavRow("Back up", "Includes file paths and listening stats") {
         save.launch("dot-backup-${java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())}.json")
     }
     NavRow("Restore", "Replace them with a backup") { open.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) }

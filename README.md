@@ -400,6 +400,7 @@ sequenceDiagram
 - **Equal-power curve.** Sine in, cosine out keeps perceived loudness constant through the blend, where a linear fade dips in the middle.
 - **Waits for the decoder.** The fade clock only starts once the incoming track is ready, so the first beat isn't lost.
 - **Interruptible.** Skipping mid-fade cuts the old outgoing track and fades out from whatever volume the current one has reached.
+- **Pausable.** Pausing mid-fade holds both volumes where they are and the fade sleeps until you press play, then carries on from the same point.
 - **One audio focus owner.** The engine requests focus itself. Two players requesting it separately would pause each other.
 - **One audio session.** Both players share a session ID, so the equalizer applies to both sides of a fade.
 - **The analyser follows the incoming song.** When the roles swap, the beat tracker switches to the new player, so the blend's beats and tempo belong to one song.
@@ -455,7 +456,7 @@ flowchart LR
 
 Dot is built to stay light on battery and memory:
 
-- The engine tick runs only while music plays and sleeps completely when paused.
+- The engine tick runs only while music plays and sleeps completely when paused, and so does a crossfade paused halfway.
 - Visuals render at most 60 fps, even on 120 Hz screens, and stop once the music is paused and the dots have settled.
 - Dot art paints its halftone once into a bitmap; each frame only scales it and lights the ripple band.
 - The analyser runs only while a visual or the Glyph strip is using it, and visuals release it when Dot leaves the screen; the waveform is skipped when only the strip listens.
@@ -504,6 +505,7 @@ app/src/main/java/com/dj/dot
 │   └── Settings.kt        typed preferences as StateFlows
 ├── playback/
 │   ├── DotEngine.kt       dual-player engine, crossfade, focus, queue
+│   ├── Crossfade.kt       fade clock that holds and sleeps while paused
 │   ├── ListeningTracker.kt listening time and tempo learning
 │   ├── DotService.kt      media session service and notification art
 │   ├── DotDsp.kt          the audio chain: EQ, bass, width, 8D, karaoke, reverb, levelling, limiter

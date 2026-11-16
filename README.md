@@ -547,7 +547,7 @@ app/src/test/java/com/dj/dot   JVM unit tests: store, restore, library sorting, 
 
 ## Building
 
-Requirements: JDK 17 or 21 and the Android SDK (platform 36).
+Requirements: JDK 17 or 21 and the Android SDK (platform 37).
 
 ```bash
 git clone https://github.com/dhananjay6561/dot.git

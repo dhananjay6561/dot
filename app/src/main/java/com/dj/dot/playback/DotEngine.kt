@@ -160,7 +160,11 @@ class DotEngine(
     private val gain = floatArrayOf(1f, 0f)
     private var master = 1f
     private var duck = 1f
-    private var wantPlay = false
+    /** Whether the user wants music playing; a flow so a paused crossfade can sleep until it flips. */
+    private val wantPlayFlow = MutableStateFlow(false)
+    private var wantPlay: Boolean
+        get() = wantPlayFlow.value
+        set(value) { wantPlayFlow.value = value }
     private var fadeJob: Job? = null
     private var masterJob: Job? = null
     private var sleepJob: Job? = null
@@ -638,14 +642,7 @@ class DotEngine(
         fadeJob = scope.launch {
             val waitFrom = SystemClock.uptimeMillis()
             while (inc.playbackState != Player.STATE_READY && SystemClock.uptimeMillis() - waitFrom < 1500) delay(10)
-            var elapsed = 0L
-            var last = SystemClock.uptimeMillis()
-            while (elapsed < durationMs) {
-                delay(16)
-                val now = SystemClock.uptimeMillis()
-                if (wantPlay) elapsed += now - last
-                last = now
-                val x = (elapsed.toFloat() / durationMs).coerceIn(0f, 1f)
+            runCrossfade(durationMs, wantPlayFlow, SystemClock::uptimeMillis) { x ->
                 gain[inI] = sin(x * PI.toFloat() / 2)
                 gain[outI] = outStart * cos(x * PI.toFloat() / 2)
                 applyVolumes()

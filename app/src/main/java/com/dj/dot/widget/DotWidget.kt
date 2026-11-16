@@ -12,6 +12,8 @@ import android.widget.RemoteViews
 import com.dj.dot.DotApp
 import com.dj.dot.MainActivity
 import com.dj.dot.R
+import java.security.MessageDigest
+import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -24,6 +26,10 @@ class DotWidget : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
             ACTION_TOGGLE, ACTION_NEXT -> {
+                val expected = context.getSharedPreferences(TOKEN_PREFS, Context.MODE_PRIVATE)
+                    .getString(TOKEN_KEY, null)
+                val supplied = runCatching { intent.getStringExtra(EXTRA_TOKEN) }.getOrNull()
+                if (!tokensMatch(expected, supplied)) return
                 val pending = goAsync()
                 RemoteControl.send(context, done = { pending.finish() }) { c ->
                     if (intent.action == ACTION_NEXT) c.seekToNext() else if (c.isPlaying) c.pause() else c.play()
@@ -36,7 +42,22 @@ class DotWidget : AppWidgetProvider() {
     companion object {
         private const val ACTION_TOGGLE = "com.dj.dot.widget.TOGGLE"
         private const val ACTION_NEXT = "com.dj.dot.widget.NEXT"
+        private const val EXTRA_TOKEN = "com.dj.dot.widget.ACTION_TOKEN"
+        private const val TOKEN_PREFS = "dot_widget_auth"
+        private const val TOKEN_KEY = "action_token"
+        private val tokenLock = Any()
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+        private fun actionToken(context: Context): String = synchronized(tokenLock) {
+            val prefs = context.getSharedPreferences(TOKEN_PREFS, Context.MODE_PRIVATE)
+            prefs.getString(TOKEN_KEY, null) ?: UUID.randomUUID().toString().also {
+                check(prefs.edit().putString(TOKEN_KEY, it).commit()) { "Cannot save widget action token" }
+            }
+        }
+
+        internal fun tokensMatch(expected: String?, supplied: String?): Boolean =
+            expected != null && supplied != null && expected.length == supplied.length &&
+                MessageDigest.isEqual(expected.toByteArray(Charsets.UTF_8), supplied.toByteArray(Charsets.UTF_8))
 
         /** Redraws every placed widget from the engine's current state. Cheap no-op when none are placed. */
         fun push(context: Context) {
@@ -66,7 +87,8 @@ class DotWidget : AppWidgetProvider() {
         }
 
         private fun broadcast(context: Context, action: String, code: Int) = PendingIntent.getBroadcast(
-            context, code, Intent(context, DotWidget::class.java).setAction(action),
+            context, code, Intent(context, DotWidget::class.java).setAction(action)
+                .putExtra(EXTRA_TOKEN, actionToken(context)),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
     }

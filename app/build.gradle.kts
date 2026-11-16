@@ -93,7 +93,7 @@ kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_17) } }
 val glyphSdkCommit = "8ee807a9312a640b0d43051450924e3446bc1d78"
 val glyphSdkSha256 = "329393019db5f0f987c6245855d13fa273d06756c68829ca0f6ae686ba336da1"
 val glyphSdk = layout.projectDirectory.file("libs/glyph-matrix-sdk-2.0.aar")
-val fetchGlyphSdk by tasks.registering {
+val fetchGlyphSdk = tasks.register("fetchGlyphSdk") {
     val target = glyphSdk.asFile
     inputs.property("sha256", glyphSdkSha256)
     outputs.file(target)

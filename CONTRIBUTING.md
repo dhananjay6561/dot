@@ -10,7 +10,7 @@ Thanks for wanting to help. Dot is a small, focused app, so the best contributio
 
 ## Building
 
-You need JDK 17 or newer and the Android SDK (platform 36).
+You need JDK 17 or newer and the Android SDK (platform 37).
 
 ```bash
 git clone https://github.com/dhananjay6561/dot.git

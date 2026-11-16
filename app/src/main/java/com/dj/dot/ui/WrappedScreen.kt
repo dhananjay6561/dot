@@ -56,6 +56,7 @@ import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -194,7 +195,7 @@ private fun ShareableSummary(stats: WrappedStats, shareLayer: GraphicsLayer, mod
 @Composable
 private fun SummaryCard(stats: WrappedStats) {
     val (type, line) = listenerType(stats.hours)
-    val since = SimpleDateFormat("d MMM yyyy", Locale.getDefault()).format(Date(stats.since))
+    val since = SimpleDateFormat("d MMM yyyy", LocalLocale.current.platformLocale).format(Date(stats.since))
     Column(
         Modifier
             .fillMaxWidth()
@@ -340,7 +341,7 @@ private fun StoryCard(story: Story, stats: WrappedStats, shareLayer: GraphicsLay
     ) {
         when (story) {
             Story.Minutes -> {
-                val since = SimpleDateFormat("d MMM", Locale.getDefault()).format(Date(stats.since))
+                val since = SimpleDateFormat("d MMM", LocalLocale.current.platformLocale).format(Date(stats.since))
                 Label("Since $since you've played", color = Dot.White)
                 Spacer(Modifier.height(16.dp))
                 CountUp(stats.totalMinutes)

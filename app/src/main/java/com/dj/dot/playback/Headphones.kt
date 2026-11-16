@@ -13,6 +13,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.ContextCompat
+import androidx.core.content.IntentCompat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -22,7 +23,10 @@ import kotlinx.coroutines.flow.StateFlow
  */
 @SuppressLint("MissingPermission")
 class Headphones(private val context: Context) {
-    data class Info(val name: String, val battery: Int?)
+    data class Info(val name: String, val battery: Int?, val address: String? = null) {
+        /** Whether the Bluetooth device at [address] is these earphones. */
+        fun isDevice(address: String?) = address != null && address == this.address
+    }
 
     private val _connected = MutableStateFlow<Info?>(null)
     val connected: StateFlow<Info?> = _connected
@@ -46,11 +50,16 @@ class Headphones(private val context: Context) {
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(c: Context, intent: Intent) {
             if (intent.action == ACTION_BATTERY_LEVEL_CHANGED) {
-                val level = intent.getIntExtra(EXTRA_BATTERY_LEVEL, -1)
                 val current = _connected.value
-                if (current != null && level in 0..100) {
-                    _connected.value = current.copy(battery = level)
-                    return
+                if (current != null) {
+                    // Watches and fitness trackers send this broadcast too; their levels aren't the earphones'.
+                    val sender = IntentCompat.getParcelableExtra(intent, BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
+                    if (!current.isDevice(sender?.address)) return
+                    val level = intent.getIntExtra(EXTRA_BATTERY_LEVEL, -1)
+                    if (level in 0..100) {
+                        _connected.value = current.copy(battery = level)
+                        return
+                    }
                 }
             }
             refresh()
@@ -66,7 +75,11 @@ class Headphones(private val context: Context) {
                 override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
                     val device = runCatching { proxy.connectedDevices.firstOrNull() }.getOrNull()
                     _connected.value = device?.let { d ->
-                        Info(runCatching { (if (Build.VERSION.SDK_INT >= 30) d.alias else null) ?: d.name }.getOrNull() ?: "Earphones", batteryOf(d))
+                        Info(
+                            runCatching { (if (Build.VERSION.SDK_INT >= 30) d.alias else null) ?: d.name }.getOrNull() ?: "Earphones",
+                            batteryOf(d),
+                            runCatching { d.address }.getOrNull(),
+                        )
                     }
                     adapter.closeProfileProxy(profile, proxy)
                 }
